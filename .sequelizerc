@@ -1,0 +1,25 @@
+const path = require('path');
+
+module.exports = {
+  'config': path.resolve('db/config', 'config.js'),
+  'models-path': path.resolve('db', 'models'),
+  'seeders-path': path.resolve('db', 'seeders'),
+  'migrations-path': path.resolve('db', 'migrations')
+};
+
+/*
+
+ await queryInterface.addConstraint('Videos',{
+    type: "foreign key",
+    fields: ["userId"],
+    references:{
+      table:"Users",
+      field: "id"
+    },
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+
+    
+      await queryInterface.removeConstraint('Videos',"foreign key")
+   })
+*/
