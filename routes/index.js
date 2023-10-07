@@ -1,19 +1,17 @@
 const express = require('express')
 const router = express.Router()
-const signup = require('./signupRoute')
 
+const fs = require('fs')
 
-router.use('/signup',signup)
-router.use('/signin',signup)
-router.use('/profile',signup)
-router.use('/create',signup)
-router.use('/edit',signup)
-router.use('/delete',signup)
-router.use('/publish',signup)
-router.use('/like',signup)
-router.use('/list',signup)
-router.use('/detail',signup)
-router.use('/follow',signup)
+let handlers = {}
+let files = fs.readdirSync('./routes')
 
+files.forEach(file => {
+    const key = file.slice(0,-3)
+    if(key !== 'index') handlers[key] = require(`./${key}`)
+})
+for(let path in handlers){
+    router.use(`/${path}`,handlers[path])
+}
 
 module.exports = router
