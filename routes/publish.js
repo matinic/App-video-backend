@@ -3,21 +3,21 @@ const errorMsg = require('../errors')
 const auth = require('../middlewares/JWT_verifyToken')
 const {video} = (require('../db')).models
 
-router.get('/',auth,async(req,res)=>{
+router.put('/',auth,async(req,res)=>{
 
-    const {publish,id} = req.body
+    const body = req.body
 
-    if(!publish || !id) return res.status(400).json({message: errorMsg[400]})
+    if(!body.id) return res.status(400).json({message: errorMsg[400]})
 
-    if(typeof publish !== 'boolean') return res.status(400).json({message: 'Data type must be a boolean'})
+    if(typeof body.published !== 'boolean') return res.status(400).json({message: 'The publication data is invalid or non-existent'})
 
     try {
     
-        const videoFounded = await video.findOne({where: {id: id}})
+        const videoFounded = await video.findOne({where: {id: body.id}})
 
         if(!videoFounded) return res.status(404).json({message: errorMsg['404_video']})
     
-        videoFounded.publish = publish
+        videoFounded.published = body.published
 
         await videoFounded.save()
 

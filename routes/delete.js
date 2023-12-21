@@ -3,15 +3,15 @@ const errorMsg = require('../errors')
 const auth = require('../middlewares/JWT_verifyToken')
 const {video} = (require('../db')).models
 
-router.get('/',auth,async(req,res)=>{ 
+router.delete('/',auth,async(req,res)=>{ 
 
-    const {id} = req.body
+    const {id} = req.query
 
     if(!id) return res.status(400).json({message: errorMsg[400]})
 
     try{
 
-        const videoFounded = await video.findOne({id: id})
+        const videoFounded = await video.findOne({ where: { id: id} })
 
         if(!videoFounded) return res.status(404).json({message: errorMsg['404_video']})
 

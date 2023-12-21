@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: sequelize.literal('gen_random_uuid()'),
       unique: true
     },
-    name: {
+    title: {
       type: DataTypes.STRING,
     },
     userId:{
@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: 'CASCADE'
     },
     description:{
-      type: DataTypes.STRING
+      type: DataTypes.TEXT
     },
     url:{
       type: DataTypes.STRING,

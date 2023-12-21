@@ -11,6 +11,9 @@ router.get('/',auth,async (req,res)=>{
 
         const foundUser = await user.findOne({
                 where: {username: username},
+                attributes:{
+                    exclude:['password','createdAt','updatedAt','subcriptions','followers']
+                },
                 include:[{
                         model: video,
                     }]
@@ -19,12 +22,7 @@ router.get('/',auth,async (req,res)=>{
     
         if(!foundUser) return res.sendStatus(404).json({message: 'User not found'})
     
-        const userInfo = {...foundUser.dataValues}
-    
-        delete userInfo.password
-        delete userInfo.refreshToken
-    
-        return res.status(200).json({userInfo})
+        return res.status(200).json({...foundUser.dataValues})
         
     } catch (error) {
 
@@ -33,5 +31,6 @@ router.get('/',auth,async (req,res)=>{
     }
 
 })
+
 
 module.exports = router

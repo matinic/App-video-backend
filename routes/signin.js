@@ -29,7 +29,7 @@ router.post('/',async(req,res)=>{
 
             res
             .status(200)
-            .cookie('jwt',newRefreshToken,{maxAge: 1000 * 60 * 60 * 24})
+            .cookie('jwt',newRefreshToken,{maxAge: 1000 * 60 * 60 * 24, httpOnly: true, secure: true})
             .json({message:'User Logged Successfully', isLoggedIn: true, accessToken: newAccessToken})
 
         }else{

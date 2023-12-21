@@ -1,30 +1,33 @@
 require('dotenv').config()
 const express = require('express')
 const router = express.Router()
-const createUser = require('../controllers/signup')
 const errorMsg = require('../errors')
+const {user} = (require('../db')).models
+const bcrypt = require('bcrypt')
 
 router.post('/', async function (req,res){
 
-//Todo el codigo de validacion se puede colocar dentro de un middleware antes de entrar en la seccion del guardado del usuario en la base de datos y de devolver la respuesta final
-
 try {
-   const {body} = req;
    const {
-    firstName,
-    lastName,
     email,
     username,
     password,
-   } = body
+   } = req.body
    
-   if(!firstName || !lastName || !email || !password || !username) return res.status(400).json({message: errorMsg[400]})
+   if(!email || !password || !username) return res.status(400).json({message: errorMsg[400]})
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+   const usernameFounded = await user.findOne({where: {username: username}})
 
-    const newUser = await createUser(body)
+   if(usernameFounded) return res.status(409).json({message: 'This name is already in use, please select another'})
 
-    if(!newUser) return res.status(404).json({message: `User hasn't been created`})
+   const emailFounded = await user.findOne({where: {email : email}})
+
+   if(emailFounded) return res.status(409).json({message: "Email in use, please select another"})
+
+   await user.create({
+      ...req.body,
+      password: await bcrypt.hash(password, 8)
+   })
 
     res
         .status(200)

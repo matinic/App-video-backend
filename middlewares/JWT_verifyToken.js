@@ -2,9 +2,12 @@ require('dotenv').config()
 const jwt = require('jsonwebtoken')
 
 async function auth(req,res,next){
+  
   const header = req.headers['authorization']
+
   if(!header) return res.sendStatus(401)
   const token = header.split(' ')[1]
+
   const decodedToken = function (){
     return new Promise((resolve,reject)=>{
       jwt.verify(token,process.env.JWT_ACCESS,(err,decoded)=>{
@@ -18,6 +21,7 @@ async function auth(req,res,next){
   }
   try {
   const decoded = await decodedToken()
+
     if(decoded){
       req.username = decoded.username
       next() 
