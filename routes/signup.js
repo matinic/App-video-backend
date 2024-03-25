@@ -35,7 +35,7 @@ try {
 
    } catch (error) {
 
-      return res.status(500).json({message: errorMsg[500], error: error.message})
+      return res.status(err.status).json({message: error.message})
       
    }
 

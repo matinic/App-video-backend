@@ -10,7 +10,7 @@ files.forEach(file => {
     const key = file.slice(0,-3)
     if(key !== 'index') handlers[key] = require(`./${key}`)
 })
-for(let path in handlers){
+for(let path in handlers){  
     router.use(`/${path}`,handlers[path])
 }
 
