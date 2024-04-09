@@ -11,18 +11,21 @@ router.get('/',async(req,res)=>{
                 {
                     published: true
                 },
+            attributes:{exclude: ["description",'userId','published','likes','createdAt','updatedAt']},
             include:
                 {
                     model: user,
                     attributes:[
                         "username",
                         "image",
-                    ]
+                    ],
                 },
+            order: [['createdAt', 'DESC']],
             limit: query?.limit,
-            offset: query?.page
-        })   
-        return res.status(200).json({videos: allVideos})
+            offset: query?.page  * query?.limit
+        })  
+        console.log(query?.page) 
+        return res.status(200).json({videos: allVideos, nextCursor: +query?.page+1})
     } catch (error) {
         return res.status(500).json({message: errorMsg[500], error: error.message})
     }
