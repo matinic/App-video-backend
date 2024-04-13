@@ -22,9 +22,8 @@ router.get('/',async(req,res)=>{
                 },
             order: [['createdAt', 'DESC']],
             limit: query?.limit,
-            offset: query?.page  * query?.limit
+            offset: query?.page * query?.limit
         })  
-        console.log(query?.page) 
         return res.status(200).json({videos: allVideos, nextCursor: +query?.page+1})
     } catch (error) {
         return res.status(500).json({message: errorMsg[500], error: error.message})
