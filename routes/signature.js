@@ -2,28 +2,24 @@
 require('dotenv').config()
 const cloudinary = require('cloudinary').v2;
 const router = (require('express')).Router()
+const auth = require('../middlewares/JWT_verifyToken')
 
-function getSignature (req,res){
-    
-    let body
+ 
+router.post('/',auth,(req,res)=>{
 
-    if(req.method === 'GET')  body = {}
-    if(req.method === 'POST')  body = req?.body || {}
+  const body = req?.body || {}
 
-    const timestamp = Math.round((new Date).getTime()/1000);
+  const timestamp = Math.round((new Date).getTime()/1000);
 
-    const signature = cloudinary.utils.api_sign_request(
-        {
-          timestamp: timestamp,
-          ...body
-        },
-        process.env.API_SECRET
-      );
+  const signature = cloudinary.utils.api_sign_request(
+      {
+        timestamp: timestamp,
+        ...body
+      },
+      process.env.API_SECRET
+    );
 
-      return res.status(200).json({timestamp,signature})
-}
-
-router.get('/',getSignature)
-router.post('/',getSignature)
+    return res.status(200).json({timestamp,signature})
+})
 
 module.exports = router

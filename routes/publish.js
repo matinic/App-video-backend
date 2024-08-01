@@ -5,27 +5,31 @@ const {video} = (require('../db')).models
 
 router.put('/',auth,async(req,res)=>{
 
-    const body = req.body
-
-    if(!body.id) return res.status(400).json({message: errorMsg[400]})
-
-    if(typeof body.published !== 'boolean') return res.status(400).json({message: 'The publication data is invalid or non-existent'})
-
     try {
+
+        if(!req.query.id) throw Error(errorMsg[400])
+
+        if(typeof req.body.published !== 'boolean') throw Error('Invalid Data')
+
+        console.log(req.body.published)
     
-        const videoFounded = await video.findOne({where: {id: body.id}})
+        const videoFound = await video.findOne({where: {id: req.query.id}})
 
-        if(!videoFounded) return res.status(404).json({message: errorMsg['404_video']})
+        if(!videoFound) throw Error(errorMsg['404_video'])
     
-        videoFounded.published = body.published
+        videoFound.published = req.body.published
 
-        await videoFounded.save()
+        await videoFound.save()
 
-        return res.status(200).json({message: 'Video updated'})
+        return res.status(200).json('Video updated')
         
     } catch (error) {
-        
-        return res.status(500).json({message: errorMsg[500], error: error.message})
+        if(typeof error === "string"){
+            return res.status(400).json(error)
+        }
+        if(error instanceof Error){
+            return res.status(500).json({message: errorMsg[500], error: error.message})
+        }
 
     }
 })

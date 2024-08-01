@@ -32,7 +32,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     likes:{
       type: DataTypes.INTEGER,
-      defaultValue: 0
+      defaultValue: 0,
+      allowNull: false,
+    },
+    dislikes: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false
     },
     published: {
       type: DataTypes.BOOLEAN,

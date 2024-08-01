@@ -11,6 +11,7 @@ router.get('/',auth,async(req,res)=>{
     try{
         const userFound =   await user.findOne({where :{username}})
         if(!userFound) return res.status(200).json({message: errorMsg['404_user']})
+        //Search for the information of the videos using the "likedVideos" attribute
         const likedVideos = await video.findAll({
             where:{ id: userFound.likedVideos },
             include:{

@@ -22,12 +22,13 @@ async function auth(req,res,next){
   try {
   const decoded = await decodedToken()
 
-    if(decoded){
+    if(decoded){ 
       req.username = decoded.username
       next() 
     }
   } catch (error) {
-   return res.status(403).json({message: error.message})
+    res.clearCookie('jwt',{httpOnly: true, secure: true})
+    return res.status(403).json({message: error.message})
   }
 }
  

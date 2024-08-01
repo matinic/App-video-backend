@@ -44,9 +44,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     likedVideos:{
       type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      defaultValue: []
     },
-    follow:{
-      type: DataTypes.ARRAY(DataTypes.STRING)
+    dislikedVideos: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      defaultValue: []
     },
     refreshToken: DataTypes.STRING
 

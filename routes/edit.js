@@ -5,24 +5,14 @@ const errorMsg = require('../errors')
 
 router.patch('/',auth,async(req,res)=>{
 
-    // if(Object.entries(req.body).includes('publish')) return res.status(400).json({message: '< publish > property cannot be changed in this route'})
-
-    const body = req.body
-
-    const id = body?.id
-
-    if(!id) return res.status(400).json({message: errorMsg[400]})
+    if(!req.query?.id) return res.status(400).json({message: errorMsg[400]})
 
     try {
-        const foundedVideo = await video.findOne({
-            where:{
-                id: id
-            }
-        })
+        const foundVideo = await video.findByPk(req.query?.id)
     
-        if(!foundedVideo) return res.status(404).json({message: 'video not found'})
+        if(!foundVideo) return res.status(404).json({message: 'video not found'})
 
-        const changed = await foundedVideo.update(req.body)
+        const changed = await foundVideo.update(req.body)
 
         return res.status(200).json(changed)
         

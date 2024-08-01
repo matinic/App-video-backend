@@ -13,7 +13,7 @@ function accessToken(user){
     const token = jwt.sign({
        username: user.username,
     }, process.env.JWT_ACCESS,{
-        expiresIn: '30m'
+        expiresIn: '15m'
     })
     return token
 }

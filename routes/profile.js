@@ -11,9 +11,7 @@ router.get('/',auth,async (req,res)=>{
 
         const foundUser = await user.findOne({
                 where: {username: username},
-                attributes:{
-                    exclude:['password','createdAt','updatedAt','subcriptions','followers']
-                },
+                attributes:['id','username','image','email','subscriptions','likedVideos','dislikedVideos'],
                 include:[{
                         model: video,
                     }]
@@ -22,7 +20,7 @@ router.get('/',auth,async (req,res)=>{
     
         if(!foundUser) return res.sendStatus(404).json({message: 'User not found'})
     
-        return res.status(200).json({...foundUser.dataValues})
+        return res.status(200).json({...foundUser.dataValues, isLoggedIn: true})
         
     } catch (error) {
 

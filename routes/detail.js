@@ -10,6 +10,9 @@ router.get('/',async(req,res)=>{
     
     try {
         const videoFounded = await video.findByPk(id,{
+            attributes: {
+                exclude:['userId']
+            },
             include:{
                 model: user,
                 attributes: ['id','image','username','followersCount']

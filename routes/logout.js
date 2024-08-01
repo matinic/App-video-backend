@@ -1,7 +1,7 @@
 const router = (require('express')).Router()
 const {user} = require('../db').models
 
-router.get('/',async(req,res)=>{
+router.post('/',async(req,res)=>{
 
     const cookie = req.cookies
 
