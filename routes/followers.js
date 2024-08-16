@@ -9,7 +9,7 @@ router.get('/',async(req,res)=>{
         if(!userFound) throw new Error(errorMsg['404_user'])
         //search fo all channel subscriptions in db
         const followers = await user.findAll({
-            where:{ id: user.subscriptions },
+            where:{ id: userFound.followers },
             attributes:['id','image','username'],
         })
         return res.status(200).json(followers)

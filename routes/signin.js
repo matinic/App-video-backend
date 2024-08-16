@@ -33,7 +33,7 @@ router.post('/',async(req,res)=>{
             .json({
                 message:'User Logged Successfully',
                 username: userFunded.username,
-                accessToken: newAccessToken
+                accessToken: newAccessToken,
             })
 
         }else{
