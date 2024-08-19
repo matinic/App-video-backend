@@ -11,11 +11,11 @@ router.delete('/',auth,async(req,res)=>{
 
     try{
 
-        const videoFounded = await video.findOne({ where: { id: id} })
+        const videoFound = await video.findOne({ where: { id } })
 
-        if(!videoFounded) return res.status(404).json({message: errorMsg['404_video']})
+        if(!videoFound) return res.status(404).json({message: errorMsg['404_video']})
 
-        await videoFounded.destroy()
+        await videoFound.destroy()
 
         return res.status(200).json({message: "Video deleted successfully"})
 

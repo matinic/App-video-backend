@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: []
     },
-    refreshToken: DataTypes.STRING
+    refreshToken: DataTypes.STRING,
 
   }, {
     sequelize,

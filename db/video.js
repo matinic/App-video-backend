@@ -43,11 +43,12 @@ module.exports = (sequelize, DataTypes) => {
     published: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
-    }
+    },
   }, {
     sequelize,
     modelName: 'video',
-    timestamps: true
+    timestamps: true,
+    paranoid: true,
   });
   return video;
 };
