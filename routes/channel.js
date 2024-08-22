@@ -13,7 +13,7 @@ router.get('/',async(req,res)=>{
         //Search by username
         const userFound = await user.findOne({
             where: { username },
-            attributes: ['id','username','image','followersCount'],
+            attributes: ['id','username','image','followersCount',"followers"],
             include:{
                 model: video,
                 required: false,
