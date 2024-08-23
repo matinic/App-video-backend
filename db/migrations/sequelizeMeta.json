@@ -8,5 +8,6 @@
   "20240515053254-unnamed-migration.js",
   "20240515053648-unnamed-migration.js",
   "20240515054359-users-likedVideos-definition-defaultvalue.js",
-  "20240817144756-isDeletedVideo-field-Video-Table.js"
+  "20240817144756-isDeletedVideo-field-Video-Table.js",
+  "20240823214024-poster-column-on-video-table.js"
 ]

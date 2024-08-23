@@ -44,6 +44,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    poster:{
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: ''
+    },
   }, {
     sequelize,
     modelName: 'video',
