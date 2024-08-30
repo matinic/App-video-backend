@@ -26,7 +26,7 @@ router.get('/',async(req,res)=>{
         })  
         return res.status(200).json({videos: allVideos, nextCursor: +query?.page+1})
     } catch (error) {
-        return res.status(500).json({message: errorMsg[500], error: error.message})
+        return res.status(500).json({message: error.message})
     }
 })
 

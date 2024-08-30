@@ -5,7 +5,9 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class user extends Model {
     static associate(models) {
-      models.user.hasMany(models.video,{foreignKey:'userId'})
+      models.user.hasMany(models.video,{foreignKey: "userId"})
+      models.user.belongsToMany(models.notification,{through: models.User_Notification })
+      models.user.hasMany(models.User_Notification)
     }
   }
   user.init({

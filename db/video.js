@@ -5,7 +5,8 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class video extends Model {
     static associate(models) {
-      models.video.belongsTo(models.user,{foreignKey:'userId'})
+      models.video.belongsTo(models.user,{foreignKey: "userId"})
+      models.video.hasOne(models.notification)
     }
   }
   video.init({
@@ -49,6 +50,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: ''
     },
+    userId:{
+      type: DataTypes.UUID,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE'
+    }
   }, {
     sequelize,
     modelName: 'video',

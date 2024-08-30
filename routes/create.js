@@ -14,11 +14,11 @@ router.post('/',auth, async(req,res)=>{
 
   try {
 
-    const userFounded = await user.findOne({where: {username: username}})
+    const userFound = await user.findOne({where: {username: username}})
 
-    if(!userFounded) return res.status(404).json({message: errorMsg['404_user']})
+    if(!userFound) return res.status(404).json({message: errorMsg['404_user']})
 
-    const createdVideo = await video.create({...req.body, userId: userFounded.id})
+    const createdVideo = await video.create({...req.body, userId: userFound.id})
 
     return res.status(200).json({video:createdVideo, message: 'video uploaded succesfully'})
 
@@ -28,6 +28,14 @@ router.post('/',auth, async(req,res)=>{
 
   }
 
+})
+
+router.get("/",auth,(req,res)=>{
+  try{
+    
+  }catch(error){
+
+  }
 })
 
 module.exports = router
