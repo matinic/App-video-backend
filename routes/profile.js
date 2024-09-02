@@ -11,8 +11,7 @@ router.get('/',auth,async (req,res)=>{
                 include:[
                     {
                         model: video,
-                    },
-                   
+                    },  
                 ]
             }
         ) 
