@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id    String @id @default(uuid())  @unique
+  email String  @unique
+  name  String @unique
+  image String?
+  password String
+  subscriptors User[]  @relation("Subscription")
+  subscriptions User[]  @relation("Subscription")
+  likedVideos Video[] @relation("UserLikedVideos")
+  videos Video[] @relation("UserVideos")
+  dislikedVideos Video[] @relation("UserDislikedVideos")
+  comments Comment[] @relation("UserComments")
+  playlists Playlist[] @relation("UserPlaylists")
+  notifications Notification[] @relation("UserNotificationsGet")
+  notificationsSend Notification[] @relation("UserNotificationsSend")
+  messagesSend Message[] @relation("UserMessages")
+  messagesReceive Message[] @relation("ReceiverMessages")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  refreshToken String? @unique
+  deleted Boolean @default(false)
+}
+model Video {
+  id        String     @id @default(uuid())
+  title     String @unique
+  description String? 
+  url       String
+  thumbnail String?
+  duration  Int?
+  views     Int       @default(0)
+  published Boolean   @default(false)
+  authorId  String
+  author    User      @relation("UserVideos", fields: [authorId], references: [id])
+  likes   User[]    @relation("UserLikedVideos")
+  dislikes User[]    @relation("UserDislikedVideos")
+  playlists Playlist[] @relation("PlaylistVideos")
+  comments Comment[]  @relation("VideoComments")
+  notification Notification?
+  commentCount Int      @default(0)
+  publishedAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  tags      String[]
+  category  String?
+  rating    Float?
+  deleted Boolean @default(false)
+  deletedAt DateTime?
+}
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  videoId   String
+  userId    String
+  commentId String? @unique
+  comment Comment?  @relation("CommentResponse", fields: [commentId], references: [id]) 
+  response Comment[]  @relation("CommentResponse") 
+  notification Notification?
+  video     Video    @relation("VideoComments", fields: [videoId], references: [id])
+  user      User     @relation("UserComments", fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Playlist {
+  id        String   @id @default(uuid())
+  name      String
+  userId    String
+  videos    Video[]  @relation("PlaylistVideos")
+  user      User     @relation("UserPlaylists", fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Notification {
+  id        String   @id @default(uuid())
+  notificationTypeType String
+  notificationType NotificationType @relation(fields: [notificationTypeType], references: [type])
+  videoId String? @unique
+  commentId String? @unique
+  messageId String? @unique
+  message Message?  @relation(fields: [messageId], references: [id])
+  video Video? @relation(fields:[videoId], references: [id])
+  comment Comment? @relation(fields: [commentId], references:[id])
+  userEmmiterId String
+  read      Boolean  @default(false)
+  userEmmiter User @relation("UserNotificationsSend", fields:[userEmmiterId], references: [id])
+  userDestination   User[]  @relation("UserNotificationsGet")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model NotificationType {
+  type String @unique
+  message String
+  notification Notification[] @relation
+}
+model Message {
+  id        String   @id @default(uuid())
+  senderId  String
+  receiverId String
+  content   String
+  notification Notification?
+  sender    User     @relation("UserMessages", fields: [senderId], references: [id])
+  receiver  User     @relation("ReceiverMessages", fields: [receiverId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

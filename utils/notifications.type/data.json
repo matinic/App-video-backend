@@ -1,0 +1,22 @@
+{  
+    "NEW-VIDEO": {
+        "type": "new-video",
+        "message": "has uploaded a new video"
+    },
+    "NEW-COMMENT": {
+        "type": "new-comment",
+        "message": "has commented your video"
+    },
+    "NEW-MESSAGE": {
+        "type": "new-message",
+        "message": "has send you a message"
+    },
+    "RESPONSE-COMMENT": {
+        "type": "response-comment",
+        "message": "has responded to yor comment"
+    },
+    "NEW-SUBSCRIPTION": {
+        "type": "new-subscription",
+        "message": "has subsctibed to your channel"
+    } 
+}
