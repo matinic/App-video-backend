@@ -17,10 +17,10 @@ router.use(auth)
 router.get("/", auth, reqBody( userSchema.userIdSchema ), notificationController.getNotifications)
 
 //POST
-router.post( "/new-video", reqBody( notificationSchema.createVideoNotificationSchema ), notificationController.createVideoNotification )
-router.post( "/new-comment", reqBody( notificationSchema.createCommentNotificationSchema ), notificationController.createCommentNotification )
-router.post( "/response-notification", reqBody( notificationSchema.createResponseNotificationSchema ), notificationController.createResponseNotification )
-router.post( "/new-message", reqBody( notificationSchema.createMessageNotificationSchema ), notificationController.createMessageNotification )
+router.post( "/new-video", reqBody( notificationSchema.createNewVideoNotificationSchema ), notificationController.createNewVideoNotification )
+router.post( "/new-comment", reqBody( notificationSchema.createNewCommentOnVideoNotificationSchema ), notificationController.createNewCommentOnVideoNotification )
+router.post( "/response-notification", reqBody( notificationSchema.createNewCommentResponseNotificationSchema ), notificationController.createNewCommentResponseNotification )
+router.post( "/new-message", reqBody( notificationSchema.createNewMessageNotificationSchema ), notificationController.createNewMessageNotification )
 router.post( "/send-notification", reqBody( notificationSchema.updateNotificationSchema ), notificationController.updateNotification )
 
 

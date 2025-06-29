@@ -1,7 +1,7 @@
 import { PrismaClient } from "../generated/prisma";
 import { NotificationDto }   from "../utils/zod/notification/dto"
-import { UserDto }   from "../utils/zod/user/dto"
-import notificationType from "../utils/notifications.type/data.json"
+import { UserDto }  from "../utils/zod/user/dto"
+import { NewNotificationInput } from "../utils/notifications.type/dto"
 
 const prismaInstance = new PrismaClient()
 
@@ -10,13 +10,20 @@ const { notification, user } = prismaInstance
 // const { user, ...prismaB } = prisma.$extends()
 
 export default {
-   createVideoNotification: async(notificationData:NotificationDto.CreateVideoNotificationDto)=>{
-    return await notification.create({
-        data:{
-            userEmmiterId: notificationData.userId,
-            videoId: notificationData.videoId,
-            notificationTypeType: notificationType["NEW-VIDEO"].type
+   createNewVideoNotification: async(notificationData:NotificationDto.CreateNewVideoNotificationDto)=>{
+    const newNotificationInput: NewNotificationInput = {
+        userEmmiter: {
+            connect: { id: notificationData.userId }
         },
+        video: {
+            connect: { id: notificationData.videoId }
+        },
+        notificationType: {
+            connect: { type: "NEW-VIDEO"}
+        } 
+    }
+    return await notification.create({
+        data: newNotificationInput,
         include:{
             userEmmiter:{
                 select:{
@@ -31,13 +38,20 @@ export default {
 
     }) 
   },
-  createCommentOnVideoNotification: async(notificationData:NotificationDto.CreateCommentNotificationDto)=>{
-    return await notification.create({
-        data:{
-            userEmmiterId: notificationData.userId,
-            commentId: notificationData.commentId,
-            notificationTypeType: notificationType["NEW-COMMENT"].type
+  createNewCommentOnVideoNotification: async(notificationData:NotificationDto.CreateNewCommentOnVideoNotificationDto)=>{
+    const newNotificationInput: NewNotificationInput = {
+        userEmmiter: {
+            connect: { id: notificationData.userId }
         },
+        comment: {
+            connect: { id: notificationData.commentId }
+        },
+        notificationType: {
+            connect: { type: "NEW-COMMENT"}
+        } 
+    }
+    return await notification.create({
+        data: newNotificationInput,
         include:{
             userEmmiter:{
                 include:{
@@ -58,13 +72,20 @@ export default {
         },
     })
   },
-  createCommentResponseNotification: async(notificationData:NotificationDto.CreateResponseNotificationDto)=>{
-    return await notification.create({
-        data:{
-            userEmmiterId: notificationData.userId,
-            commentId: notificationData.responseId,
-            notificationTypeType: notificationType["RESPONSE-COMMENT"].type
+  createNewCommentResponseNotification: async(notificationData:NotificationDto.CreateNewCommentResponseNotificationDto)=>{
+    const newNotificationInput: NewNotificationInput = {
+        userEmmiter: {
+            connect: { id: notificationData.userId }
         },
+        comment: {
+            connect: { id: notificationData.responseId }
+        },
+        notificationType: {
+            connect: { type: "NEW-COMMENT-RESPONSE"}
+        } 
+    }
+    return await notification.create({
+        data: newNotificationInput,
         include:{
             userEmmiter:{
                 include:{
@@ -85,13 +106,20 @@ export default {
         }
     })
   },
-  createMessageNotification: async(notificationData:NotificationDto.CreateMessageNotificationDto)=>{
-    return await notification.create({
-        data:{
-            userEmmiterId: notificationData.userId,
-            commentId: notificationData.messageId,
-            notificationTypeType: notificationType["NEW-MESSAGE"].type
+  createNewMessageNotification: async(notificationData:NotificationDto.CreateNewMessageNotificationDto)=>{
+    const newNotificationInput: NewNotificationInput = {
+        userEmmiter: {
+            connect: { id: notificationData.userId }
         },
+        message: {
+            connect: { id: notificationData.messageId }
+        },
+        notificationType: {
+            connect: { type: "NEW-MESSAGE" }
+        } 
+    }
+    return await notification.create({
+        data: newNotificationInput,
         include:{
             userEmmiter:{
                 select:{

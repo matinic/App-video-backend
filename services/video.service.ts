@@ -57,7 +57,7 @@ export default {
                 take: amount,                
             })
         } , 
-    getVideos: async(data:VideoDto.GetVideosDto)=>{
+    getPublishedVideosPaginated: async(data:VideoDto.GetVideosDto)=>{
             return await video.findMany({
                 where:{
                     published: true,

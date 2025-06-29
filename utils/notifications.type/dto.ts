@@ -1,5 +1,15 @@
 import notificationService from "../../services/notification.service";
 import notificationType from "./data.json"
+import {  Prisma, NotificationType } from "../../generated/prisma";
+
+
+export type NewNotificationInput = Prisma.NotificationCreateInput & {
+    notificationType: Prisma.NotificationTypeCreateNestedOneWithoutNotificationInput & {
+        connect: Prisma.NotificationTypeWhereUniqueInput & {
+            type: keyof typeof notificationType
+        }
+    }
+}
 
 export type NotificationDb = Awaited<ReturnType<typeof notificationService.getNotification>>;
 

@@ -5,9 +5,9 @@ import { UserDto } from "../utils/zod/user/dto"
 import notificationFormat from "../utils/notifications.type/map"
 
 export default {
-    createVideoNotification: async(req:Request<{},{},NotificationDto.CreateVideoNotificationDto>,res:Response)=>{
+    createNewVideoNotification: async(req:Request<{},{},NotificationDto.CreateNewVideoNotificationDto>,res:Response)=>{
         try {
-            const notification = await notificationService.createVideoNotification(req.body)
+            const notification = await notificationService.createNewVideoNotification(req.body)
             const userDestinationIdList = notification.userEmmiter.subscriptors
             const notificationId = notification.id
             await notificationService.updateNotification({
@@ -25,9 +25,9 @@ export default {
             }
         }
     },
-    createCommentNotification: async(req:Request<{},{},NotificationDto.CreateCommentNotificationDto>,res:Response)=>{
+    createNewCommentOnVideoNotification: async(req:Request<{},{},NotificationDto.CreateNewCommentOnVideoNotificationDto>,res:Response)=>{
         try {
-            const notification = await notificationService.createCommentOnVideoNotification(req.body)
+            const notification = await notificationService.createNewCommentOnVideoNotification(req.body)
             const userDestinationIdList:NotificationDto.UpdateNotificationDto["userDestinationIdList"] = [{id: notification.userEmmiter.comments[0].video.authorId}]
             const notificationId = notification.id
             await notificationService.updateNotification({
@@ -44,7 +44,7 @@ export default {
             }
         }
     },
-    createResponseNotification: async(req:Request<{},{},NotificationDto.CreateResponseNotificationDto>, res:Response)=>{
+    createNewCommentResponseNotification: async(req:Request<{},{},NotificationDto.CreateNewCommentResponseNotificationDto>, res:Response)=>{
         try {
             //check if useremmiter response and comment are the same, if they are equal the notification will not be created
             const comment = `commentService.getComment(responseId)
@@ -52,7 +52,7 @@ export default {
                 res.status(400).json({message: "Notification Cancelled"})
                 return 
             }`
-            const notification = await notificationService.createCommentResponseNotification(req.body)
+            const notification = await notificationService.createNewCommentResponseNotification(req.body)
             if( notification.userEmmiter.comments[0].comment){
                 const userDestinationIdList:NotificationDto.UpdateNotificationDto["userDestinationIdList"] = [{id: notification.userEmmiter.comments[0].comment.userId}]
                 const notificationId = notification.id 
@@ -65,7 +65,7 @@ export default {
                 })
                 return
             }else{
-                res.status(404).json({message: "Notification was not send: Comment not fund"})
+                res.status(404).json({message: "Notification was not send: Comment not found"})
                 return
             }
         } catch (error) {
@@ -75,9 +75,9 @@ export default {
             }
         }
     },
-    createMessageNotification: async(req:Request<{},{},NotificationDto.CreateMessageNotificationDto>,res:Response)=>{
+    createNewMessageNotification: async(req:Request<{},{},NotificationDto.CreateNewMessageNotificationDto>,res:Response)=>{
         try {
-            const notification = await notificationService.createMessageNotification(req.body)         
+            const notification = await notificationService.createNewMessageNotification(req.body)
             const userDestinationIdList:NotificationDto.UpdateNotificationDto["userDestinationIdList"] = [{id: notification.userEmmiter.messagesSend[0].receiverId}]
             const notificationId = notification.id
             await notificationService.updateNotification({

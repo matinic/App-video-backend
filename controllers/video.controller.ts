@@ -33,11 +33,9 @@ export default {
       }
     }
   },
-  getVideos: async(req:Request<{},{},{},VideoDto.GetVideosDto>, res:Response)=> {
+  getPublishedVideos: async(req:Request<{},{},{},VideoDto.GetVideosDto>, res:Response)=> {
     try {
-      console.log(req.query)
-      const videos = await videoService.getVideos(req.query);
-      console.log(videos)
+      const videos = await videoService.getPublishedVideosPaginated(req.query);
       res.status(200).json(videos);
       return
     } catch ( err ) {

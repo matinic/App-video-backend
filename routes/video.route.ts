@@ -9,8 +9,8 @@ const router = Router()
 const { reqBody, reqParams, reqQuery } = validateZodSchema
 
 //GET
-router.get( '/', reqQuery(videoSchema.getVideosSchema), videoController.getVideos )
-router.get( '/getVideo/:videoId', reqParams(videoSchema.videoIdSchema), videoController.getVideoById )
+router.get( '/published-videos', reqQuery(videoSchema.getVideosSchema), videoController.getPublishedVideos )
+router.get( '/get-video/:videoId', reqParams(videoSchema.videoIdSchema), videoController.getVideoById )
 router.get( '/author', reqQuery(videoSchema.getVideosByAuthorSchema), videoController.getVideosByAuthor )
 router.get( '/search', reqQuery(videoSchema.getVideoBySearchQuerySchema), videoController.getVideosBySearch )
 

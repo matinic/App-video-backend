@@ -1,19 +1,19 @@
 import { z } from "zod"
 
 export default {
-    createVideoNotificationSchema: z.object({
+    createNewVideoNotificationSchema: z.object({
         userId: z.string().uuid(),
         videoId: z.string(),
     }),
-    createCommentNotificationSchema: z.object({
+    createNewCommentOnVideoNotificationSchema: z.object({
         userId: z.string().uuid(),
         commentId: z.string().uuid()
     }),
-    createResponseNotificationSchema: z.object({
+    createNewCommentResponseNotificationSchema: z.object({
         userId: z.string().uuid(),
         responseId: z.string().uuid(),
     }),
-    createMessageNotificationSchema: z.object({
+    createNewMessageNotificationSchema: z.object({
         userId: z.string().uuid(),
         messageId: z.string().uuid()
     }),
