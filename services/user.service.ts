@@ -1,173 +1,238 @@
-import { PrismaClient } from "../generated/prisma";
-import { UserDto }   from "../utils/zod/user/dto"
+import { Operation } from "@prisma/client/runtime/library";
+import { PrismaClient, Prisma } from "@/generated/prisma";
+import { UserDto }   from "../utils/validations/user/dto"
+import { BaseDto } from "@/utils/validations/base.dto";
 
-const prismaInstance = new PrismaClient()
+const prismaDefineExtension = Prisma.defineExtension({
+    name: "user.service PrismaClient extension",
+    model:{
+        user:{
+            selectDataUser<T extends Operation>(
+                args: Prisma.Args<typeof user,  T> 
+            ){
+                args = {
+                        ...args,
+                        where:{ ...args.where, deleted: false },
+                        select: {
+                            ...args.select,
+                            id: true,
+                            name: true,
+                            image: true,
+                        } 
+                    }
+                return args
+            }
+        }
+    }
+})
+const prismaClient = new PrismaClient()
 
-const { user, ...prisma } = prismaInstance.$extends({
+const prismExtendedA = prismaClient.$extends(prismaDefineExtension)
+
+const { user, channelSubscribers, ...prisma } = prismExtendedA.$extends({
     query: {
         user: {
                 async findUnique({ model, operation, args, query }){
-                    args = {
-                        ...args,
-                        where:{ ...args.where, deleted: false },
-                        select: {
-                            ...args.select,
-                            id: true,
-                            name: true,
-                            image: true,
-                        }
-                    }
-                    return query(args)
+                    const userQueryArgs = user.selectDataUser<typeof operation>(args)
+                    args = userQueryArgs
+                    return query(args) 
                 },
                 async findMany({ model, operation, args, query }){
-                    args = {
-                        ...args,
-                        where:{ ...args.where, deleted: false },
-                        select: {
-                            ...args.select,
-                            id: true,
-                            name: true,
-                            image: true,
-                        }
-                    }
+                    const userQueryArgs = user.selectDataUser<typeof operation>(args)
+                    args = userQueryArgs
                     return query(args) 
                 },
                 async findFirst({ model, operation, args, query }){
-                    args = {
-                        ...args,
-                        where:{ ...args.where, deleted: false },
-                        select: {
-                            ...args.select,
-                            id: true,
-                            name: true,
-                            image: true,
-                        }
-                    }
+                    const userQueryArgs = user.selectDataUser<typeof operation>(args)
+                    args = userQueryArgs
                     return query(args) 
                 }
             }
         }
     },
 );
-//Create another prisma client for a higher data access
-// const { user, ...prismaB } = prisma.$extends()
 
 export default {
-    createUser: async(data:UserDto.CreateUserDto) => {
-        return await user.create({ data });
+    async createUser( data: UserDto.CreateUserDto){
+        return await user.create({ data: {
+            ...data
+        }});
     },
-    deleteUserById: async({ userId }:UserDto.UserIdDto) => {
+    async deleteUserById( { id }: BaseDto.IdDto){
         return await user.update({
-            where: { id: userId },
+            where: { id },
             data:{
                 deleted: true
             }
         })
     },
-    getUserByNameOrEmail: async(data:string) => {
+    async getUserByNameOrEmail( data: string ){
         return await user.findFirst({
             where: {
                 OR: [{ name: data }, { email: data }]
+            },
+            select: {
+                password: true,
+                id: true,
+                name: true,
+                refreshToken: true,
+                image: true
             }
         }) 
     },
-    getUserByEmail: async(email:UserDto.EmailDto) => {
-        return await user.findUnique({where: { email }})
-    },
-    getUserById: async({ userId }:UserDto.UserIdDto) => {
-        return await user.findUnique({where: { id: userId }})
-    },
-    getUserByName: async(name:UserDto.NameDto) => {
-        return await user.findUnique({where: { name }})
-    },
-    getUsers: async(params:UserDto.GetUsersDto)=>{
-        return await user.findMany({
-            skip: params.amount * params.page,
-            take: params.amount,
+    async checkUserEmail( { email }: BaseDto.EmailDto ){
+        return await user.count({
+            where:{
+                email
+            }
         })
     },
-    updateRefreshToken: async({ userId, refreshToken }:UserDto.UpdateTokenDto)=>{
+    async checkUserName ( { name }: BaseDto.NameDto ){
+        return await user.count({
+            where: {
+                name,
+            }
+        })
+    },
+    async getChannelInfo( { name }: BaseDto.NameDto ){
+        return await user.findUnique({
+            where: { name },
+            select: {
+                id: true,
+                name: true,
+                image: true,
+                _count:{
+                    select: {
+                        subscribers: true,
+                        videos: {
+                            where: {
+                                published: true
+                            }
+                        }
+                    }
+                },
+                playlists: true,
+            }
+        })
+    },
+    async getAuthChannelInfo( data: UserDto.AuthUserDto ){
+        return await user.findUnique({
+            where: { ...data },
+            select: {
+                id: true,
+                name: true,
+                image: true,
+                email: true,
+                subscriptions: {
+                    select: {
+                       channel:{
+                            select:{
+                                id: true,
+                                image: true,
+                                name: true,
+                            }
+                       }
+                    },
+                    take: 12,
+                },
+                subscribers:{
+                    select:{
+                        subscriber:{
+                            select:{
+                                id: true,
+                                image: true,
+                                name: true
+                            }
+                        }
+                    }
+                },
+                _count:{
+                    select: {
+                        subscribers: true,
+                        subscriptions: true,                       
+                        videos: true,
+                        messagesReceive: true,
+                        notifications: true,
+                    }
+                },
+                playlists: true,
+            }
+        })
+    },
+    async updateRefreshToken({ userId, refreshToken }:UserDto.UpdateTokenDto){
         return await user.update({
             where: { id: userId },
             data: { refreshToken }   
         })
     },
-    createSubscription: async({ userId, channelId }:UserDto.SubscriptionDto) =>{ 
-        await prisma.$transaction([
-            user.update({
-                where: {
-                    id: userId,
+    async createSubscription({ channelId, subscriberId }:UserDto.SubscriptionDto){ 
+        return await channelSubscribers.create({
+            data:{
+                channel: {
+                    connect:{
+                      id: channelId
+                    }
                 },
-                data:{
-                    subscriptions:{
-                        connect: { id: channelId }
+                subscriber: {
+                    connect: {
+                        id: subscriberId
                     }
                 }
-            }),
-            user.update({
-                where:{
-                    id: channelId
-                },
-                data:{
-                    subscriptors:{
-                        connect: { id: userId }
-                    }
-                }
-            }) 
-        ])
-    },
-    deleteSubscription: async({ userId, channelId }:UserDto.SubscriptionDto)=>{
-        await prisma.$transaction([
-            user.update({
-                where:{
-                    id: userId,
-                },
-                data:{
-                    subscriptions:{
-                        disconnect: { id: channelId }
-                    }
-                }
-            }),
-            user.update({
-                where:{
-                    id: channelId
-                },
-                data:{
-                    subscriptors:{
-                        disconnect: { id: userId }
-                    }
-                }
-            })
-        ])
-    },
-    getFollowedBy: async({ userId }:UserDto.UserIdDto)=>{
-        return await user.findUnique({
-            where:{ id: userId },
-            include:{
-                subscriptors: {
-                    select:{
-                        id: true,
-                        name: true,
-                        image: true,
-                    }
-                },
             }
         })
     },
-    getFollowing: async({ userId }:UserDto.UserIdDto)=>{
-        return await user.findUnique({
-            where: { id: userId  },
-            include:{
-                subscriptors: {
-                    select:{
-                        id: true,
-                        name: true,
-                        image: true,
-                    }
-                },
-            }
+    async deleteSubscription( { subscriberId, channelId }: UserDto.SubscriptionDto){
+        await channelSubscribers.delete ({
+            where:{
+                channelId_subscriberId: {
+                    channelId,
+                    subscriberId
+                }
+            },
         })
     },
+    async getSubscribers({ id, ...pagination }: UserDto.GetSubscribersListDto){
+        return await channelSubscribers.findMany({
+            where:{ channelId: id },
+            select:{
+                subscriber: {
+                    select: {
+                        name: true,
+                        image: true,
+                        id: true
+                    }
+                },
+            },
+            ...pagination
+        })
+    },
+    async getSubscriptions({ id, ...pagination }: UserDto.GetSubscribersListDto ){
+        return await channelSubscribers.findMany({
+            where:{ subscriberId: id },
+            select:{
+                channel:{    
+                    select: {
+                        name: true,
+                        image: true,
+                        id: true
+                    }
+                },
+            },
+            ...pagination
+        })
+    },
+    async checkSubscription({ channelId, subscriberId }:UserDto.SubscriptionDto){
+        return await user.count({
+            where: {
+                id: subscriberId,
+                subscriptions:{
+                    some:{
+                        channelId
+                    }
+                }
+            },
+        })
+    }
 } 
 
 

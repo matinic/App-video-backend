@@ -1,13 +1,23 @@
 import { Request, Response } from "express";
 import videoService  from "../services/video.service";
-import { VideoDto } from "../utils/zod/video/dto"
-// Function to create a new video
-//aca se implementaria IVideo tambien
+import notificationService from "@/services/notification.service"
+import userService from "@/services/user.service";
 
 export default {
-  createVideo: async (req:Request<{},{},VideoDto.CreateVideoDto>, res:Response) => {
+  async createVideo(req:Request, res:Response){
     try {
-      const createdVideo = await videoService.createVideo(req.body)
+      const data = req.body
+      const { id } = req.user
+      const createdVideo = await videoService.createVideo(data)
+
+      const subscribers = await userService.getSubscribers({ id })
+      const userDestinationIdList = subscribers.map( ( { subscriber })  => ({ userDestinationId: subscriber.id }))
+      await notificationService.createNewVideoNotification({
+        userEmmiterId: createdVideo.authorId,
+        videoId: createdVideo.id,
+        userDestinationIdList
+      })
+
       res.status(201).json({message:"video created successfully"}).redirect(`/video/${createdVideo.id}`);
       return
     }catch (err) {
@@ -17,9 +27,10 @@ export default {
       }
     }
   },
-  getVideoById: async (req:Request<VideoDto.VideoIdDto>,res:Response) => {
+  async getVideoById (req:Request, res:Response){
     try {
-      const foundVideo = await videoService.getVideoById(req.params)
+      const { id } = req.params
+      const foundVideo = await videoService.getVideoById({ id })
       if(!foundVideo){
         res.status(404).json({message: "Video not found"})
         return;
@@ -33,10 +44,14 @@ export default {
       }
     }
   },
-  getPublishedVideos: async(req:Request<{},{},{},VideoDto.GetVideosDto>, res:Response)=> {
-    try {
-      const videos = await videoService.getPublishedVideosPaginated(req.query);
-      res.status(200).json(videos);
+  async getVideosPublished(req:Request, res:Response){ 
+    try { 
+      const data = req.body
+      const videos = await videoService.getVideosPublished(data);
+      res.status(200).json({
+        videos,
+        cursor: req.body.skip + 1,
+      });
       return
     } catch ( err ) {
       console.log(err)
@@ -47,15 +62,14 @@ export default {
       }
     }
   },
-  getVideosBySearch: async(req:Request<{},{},{},VideoDto.GetVideoBySearchQueryDto>,res:Response)=>{
+  async getVideosBySearch(req:Request, res:Response){
     try {
-      const { searchQuery, filterQuery } = req.query;
-      const keywords = searchQuery
-        .trim()
-        .split(/\s+/) // separar por espacios, múltiple
-        .filter(Boolean); // evitar strings vacíos
-      const videos = await videoService.getVideosBySearch(keywords, filterQuery);
-      res.status(200).json(videos);
+      const data = req.validatedQuery 
+      const videos = await videoService.getVideosBySearch(data);
+      res.status(200).json({
+        videos,
+        cursor: req.body.skip + 1
+      });
     } catch (error) { 
        if(error instanceof Error){
         res.status(500).json({message: "Server Error"})
@@ -63,10 +77,19 @@ export default {
       }
     }
   },
-  getVideosByAuthor: async(req:Request<{},{},{},VideoDto.GetVideoByAuthorDto>, res:Response) =>{ 
+  async getChannelVideos(req:Request, res:Response){ 
     try {
-      const videosFound = await videoService.getVideosByAuthor(req.query)
-      res.status(200).json(videosFound)
+      const { name } = req.params 
+      const data = req.body 
+      const videos = await videoService.getChannelVideos({
+        name,
+        ...data
+      })
+      res.status(200).json({
+        videos,
+        cursor: req.body.skip + 1, 
+      })
+      return 
     } catch (error) {
        if(error instanceof Error){
         res.status(500).json({message: "Server Error"})
@@ -74,10 +97,32 @@ export default {
       }
     }
   },
-  deleteVideo: async(req:Request<{},{},VideoDto.VideoIdDto>, res:Response)=>{
+  async getChannelUnpublishedVideos(req:Request, res:Response){
     try {
-      await videoService.deleteVideo( req.body )
+      const { name } = req.user
+      const data = req.body 
+      const videos = await videoService.getChannelUnpublishedVideos({ 
+        name,
+        ...data
+      })
+      res.status(200).json({
+        videos,
+        cursor: req.body.skip + 1, 
+      })
+      return 
+    } catch (error) {
+       if(error instanceof Error){
+        res.status(500).json({message: "Server Error"})
+        console.log(error.message)
+      }
+    }
+  },
+  async deleteVideo(req:Request, res:Response){
+    try {
+      const { id } = req.body 
+      await videoService.deleteVideo( { id } )
       res.status(200).json({ message: "Video Deleted" })
+      return 
     } catch (err) {
       if(err instanceof Error){
         console.log(err.message)
@@ -86,10 +131,12 @@ export default {
       }
     }
   },
-  updateVideo: async(req:Request<{},VideoDto.UpdateVideoDto>,res:Response)=>{
+  async updateVideo(req:Request,res:Response){
     try {
-      const videoUpdated = await videoService.updateVideo(req.body)
-      res.status(200).json(videoUpdated)
+      const data = req.body 
+      const video = await videoService.updateVideo(data)
+      res.status(200).json(video)
+      return 
     } catch (error) {
       if(error instanceof Error){
         console.log(error.message)
@@ -98,28 +145,12 @@ export default {
       }      
     }
   },
-  postLike: async(req:Request<{},{},VideoDto.LikeStatusDto>,res:Response)=>{
+  async updateLikeVideoStatus(req:Request, res:Response){
     try {
-      const userAlreadyLiked = await videoService.getVideoIfUserAlreadyLiked(req.body)
-      const userAlreadyDisliked = await videoService.getVideoIfUserAlreadyDisliked( req.body)
-      // Check if the user has already liked the video
-      if(userAlreadyLiked) {
-        //Remove Like
-        await videoService.deleteVideoLike(req.body)
-        res.status(200).json({message:"Video likes status updated"})
-        return
-      }
-      // Check if the user has already disliked the video
-      else if(userAlreadyDisliked){
-        //Remove Dislike
-        await videoService.deleteVideoDislike(req.body)
-      }
-      //Add Like
-      await videoService.createVideoLike(req.body)
-      
+      const data = req.body
+      await videoService.upsertUserVideoLikeStatus(data)
       res.status(200).json("Video likes status updated")
-      return;
-
+      return
     } catch (err) {
       if(err instanceof Error){
         console.log(err.message)
@@ -128,34 +159,24 @@ export default {
       }
     }
   },
-  postDislike: async(req:Request<{},{},VideoDto.LikeStatusDto>,res:Response)=>{
-     try {
-      const userAlreadyLiked = await videoService.getVideoIfUserAlreadyLiked(req.body)
-      const userAlreadyDisliked = await videoService.getVideoIfUserAlreadyDisliked( req.body)
-      // Check if the user has already disliked the video
-      if(userAlreadyDisliked) {
-        //Remove disLike 
-        await videoService.deleteVideoDislike( req.body )
-        res.status(200).json({message:"Video Dislikes Status Updated"})
+  async getUserVideoStatus(req:Request, res:Response){
+    try {
+      const { id } = req.user
+      const { videoId } = req.body
+      const status = await videoService.getUserVideoStatus({ userId: id, videoId})
+      if(!status) {
+        res.status(400).json({ message: "Relation not found"})
         return
       }
-      // Check if the user has already liked the video
-      else if(userAlreadyLiked){
-        //Remove like
-        await videoService.deleteVideoLike(req.body)
-      }
-      //Add disLike
-      await videoService.createVideoDislike(req.body)
-      
-      res.status(200).json("Video Dislikes Status Updated")
-      return;
-
+      res.status(200).json({ status })
+      return
     } catch (err) {
-      if(err instanceof Error){
-        console.log(err.message)
-        res.status(500).json({message: "Something wrong happend while updating the video"})
-        return;
+        if(err instanceof Error){
+          console.log(err.message)
+          res.status(500).json({message: "Something wrong happend while updating the video"})
+          return;
       }
     }
   }
+
 }

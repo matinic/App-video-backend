@@ -1,30 +1,28 @@
 import { NextFunction, Router } from "express";
-import videoController from "../controllers/video.controller";
-import videoSchema from "../utils/zod/video/schema";
-import { auth } from "../utils/middlewares/auth.jwt"
-import validateZodSchema from "../utils/middlewares/validate.zod.schema";
-
+import videoController from "@/controllers/video.controller";
+import * as videoSchema from "@/utils/validations/video/schema";
+import * as baseSchema from "@/utils/validations/base.schema"
+import auth from "../utils/middlewares/auth.jwt"
+import validate from "../utils/middlewares/validate/middleware";
 
 const router = Router()
-const { reqBody, reqParams, reqQuery } = validateZodSchema
+
 
 //GET
-router.get( '/published-videos', reqQuery(videoSchema.getVideosSchema), videoController.getPublishedVideos )
-router.get( '/get-video/:videoId', reqParams(videoSchema.videoIdSchema), videoController.getVideoById )
-router.get( '/author', reqQuery(videoSchema.getVideosByAuthorSchema), videoController.getVideosByAuthor )
-router.get( '/search', reqQuery(videoSchema.getVideoBySearchQuerySchema), videoController.getVideosBySearch )
+router.get( '/published', validate(videoSchema.paginationAndOrderVideosSchema,"query"), videoController.getVideosPublished )
+router.get( '/get-video/:id', validate(baseSchema.idSchema,"params"), videoController.getVideoById )
+router.get( '/channel/:name', auth(false), validate(baseSchema.nameSchema,"params"), validate(videoSchema.paginationAndOrderVideosSchema,"body"), videoController.getChannelVideos )
+router.get( '/search', validate(videoSchema.paginationAndOrderVideosSchema,"body"), videoController.getVideosBySearch )
 
-router.use( auth )
 //POST
-router.post( '/', reqBody( videoSchema.createVideoSchema ), videoController.createVideo )
-router.post( '/like', reqBody( videoSchema.likeStatusSchema ), videoController.postLike )
-router.post( '/dislike', reqBody( videoSchema.likeStatusSchema ), videoController.postDislike )
+router.post( '/', auth(), validate( videoSchema.createVideoSchema,"body"), videoController.createVideo )
+router.post( '/like/:id', auth(), validate( baseSchema.idSchema,"params" ), videoController.updateLikeVideoStatus )
 
 //PUT
-router.put( '/', reqBody( videoSchema.updateVideoSchema ), videoController.updateVideo )
+router.put( '/', auth(), validate( videoSchema.updateVideoSchema, "body" ), videoController.updateVideo )
 
 //DELETE
-router.delete('/', reqBody(videoSchema.videoIdSchema), videoController.deleteVideo)
+router.delete('/:id', validate( baseSchema.idSchema,"params"), videoController.deleteVideo)
 
 
 export default router

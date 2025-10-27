@@ -1,8 +1,8 @@
-const express = require('express');
+import express from "express"
+import routes from "./routes/index"
+const morgan = require("morgan")
 const app = express();
 const port = 3001;
-const routes = require('./routes')
-const morgan = require('morgan')
 const cookieparser = require('cookie-parser')
 const cors = require('cors')
 const { createServer } = require("http");
@@ -27,12 +27,11 @@ const count2 = io.of("/").sockets.size;
 
 // })
 
-
-app.use(morgan('dev'))
+app.use(morgan('combined'))
 
 app.use(cors(
     {
-        origin: 'http://localhost:5173',
+        // origin: 'http://localhost:5173',
         credentials: true
     }
 ))

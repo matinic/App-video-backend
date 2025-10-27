@@ -12,14 +12,13 @@ model User {
   name  String @unique
   image String?
   password String
-  subscriptors User[]  @relation("Subscription")
-  subscriptions User[]  @relation("Subscription")
-  likedVideos Video[] @relation("UserLikedVideos")
+  subscribers ChannelSubscribers[]  @relation("channelSubscribers")
+  subscriptions ChannelSubscribers[]  @relation("channelSubscriptions")
+  evaluatedVideos UserVideoStatus[] @relation("evaluatedVideos")
   videos Video[] @relation("UserVideos")
-  dislikedVideos Video[] @relation("UserDislikedVideos")
   comments Comment[] @relation("UserComments")
   playlists Playlist[] @relation("UserPlaylists")
-  notifications Notification[] @relation("UserNotificationsGet")
+  notifications UserNotification[] 
   notificationsSend Notification[] @relation("UserNotificationsSend")
   messagesSend Message[] @relation("UserMessages")
   messagesReceive Message[] @relation("ReceiverMessages")
@@ -28,6 +27,24 @@ model User {
   deletedAt DateTime?
   refreshToken String? @unique
   deleted Boolean @default(false)
+}
+model ChannelSubscribers {
+  channelId String 
+  subscriberId String 
+  channel User @relation(fields:[channelId], references: [id], name: "channelSubscriptions")
+  subscriber User @relation(fields:[subscriberId], references: [id], name: "channelSubscribers")
+  createdAt DateTime @default(now())
+  @@id([channelId,subscriberId]) 
+}
+model UserVideoStatus {
+  isLike Boolean
+  videoId String 
+  userId String 
+  video  Video @relation(fields:[videoId], references:[id], name: "videoLikeStatus")
+  user User @relation(fields:[userId], references:[id], name: "evaluatedVideos")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@id([videoId,userId])
 }
 model Video {
   id        String     @id @default(uuid())
@@ -40,20 +57,30 @@ model Video {
   published Boolean   @default(false)
   authorId  String
   author    User      @relation("UserVideos", fields: [authorId], references: [id])
-  likes   User[]    @relation("UserLikedVideos")
-  dislikes User[]    @relation("UserDislikedVideos")
+  likeStatus UserVideoStatus[] @relation("videoLikeStatus")
   playlists Playlist[] @relation("PlaylistVideos")
   comments Comment[]  @relation("VideoComments")
   notification Notification?
-  commentCount Int      @default(0)
+  commentCount Int @default(0)
   publishedAt DateTime?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  tags      String[]
-  category  String?
-  rating    Float?
+  tags   Tag[] @relation
+  categoryId   String
+  category     Category   @relation(fields: [categoryId], references: [id])
+  rating    Int?
   deleted Boolean @default(false)
   deletedAt DateTime?
+}
+model Category {
+  id     String   @id @default(uuid())
+  name   String   @unique
+  videos Video[]
+}
+model Tag {
+  id     String     @id @default(uuid())
+  name   String     @unique
+  videos Video[] @relation
 }
 model Comment {
   id        String   @id @default(uuid())
@@ -79,21 +106,29 @@ model Playlist {
   updatedAt DateTime @updatedAt
 }
 model Notification {
-  id        String   @id @default(uuid())
-  notificationTypeType String
-  notificationType NotificationType @relation(fields: [notificationTypeType], references: [type])
-  videoId String? @unique
-  commentId String? @unique
-  messageId String? @unique
-  message Message?  @relation(fields: [messageId], references: [id])
-  video Video? @relation(fields:[videoId], references: [id])
-  comment Comment? @relation(fields: [commentId], references:[id])
-  userEmmiterId String
-  read      Boolean  @default(false)
-  userEmmiter User @relation("UserNotificationsSend", fields:[userEmmiterId], references: [id])
-  userDestination   User[]  @relation("UserNotificationsGet")
+  id                    String   @id @default(uuid())
+  notificationTypeType  String
+  notificationType      NotificationType @relation(fields: [notificationTypeType], references: [type])
+  videoId               String? @unique
+  commentId             String? @unique
+  messageId             String? @unique
+  message               Message?  @relation(fields: [messageId], references: [id])
+  video                 Video? @relation(fields:[videoId], references: [id])
+  comment               Comment? @relation(fields: [commentId], references:[id])
+  userEmmiterId         String
+  userEmmiter           User @relation("UserNotificationsSend", fields:[userEmmiterId], references: [id])
+  destinations          UserNotification[] 
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+model UserNotification {
+  notificationId String
+  userDestinationId String
+  notification  Notification @relation(fields: [notificationId], references: [id])
+  userDestination User @relation(fields: [userDestinationId], references: [id])
+  read          Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@id([userDestinationId, notificationId])
 }
 model NotificationType {
   type String @unique

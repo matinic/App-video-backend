@@ -1,18 +1,18 @@
 import * as jwt from "jsonwebtoken"
-import { UserDto } from '../zod/user/dto'
+import { UserDto } from '../validations/user/dto'
 import {access, refresh} from "./key"
 
-export const refreshToken = ( userId:UserDto.UserIdDto )=>{
+export const refreshToken = ( userData:UserDto.AuthUserDto )=>{
     const token = jwt.sign(
-        userId,
+        userData,
         refresh,
         { expiresIn: '1d' }
     )
     return token
 }
-export const accessToken = ( userId:UserDto.UserIdDto )=>{
+export const accessToken = ( userData:UserDto.AuthUserDto )=>{
     const token = jwt.sign(
-        userId,
+        userData,
         access,
         { expiresIn: '15m' }
     )

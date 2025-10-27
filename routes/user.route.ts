@@ -1,28 +1,25 @@
 import { Router } from "express"
-import userController from '../controllers/user.controller'
-import userSchema from "../utils/zod/user/schema"
-import { auth } from "../utils/middlewares/auth.jwt"
-import validateZodSchema from "../utils/middlewares/validate.zod.schema"
-
-// const {user,video,notification} = (require('../db/index.js')).models
+import userController from '@/controllers/user.controller'
+import * as userSchema from "@/utils/validations/user/schema"
+import * as baseSchema from "@/utils/validations/base.schema"
+import auth from "@/utils/middlewares/auth.jwt"
+import validate from "@/utils/middlewares/validate/middleware"
 
 const router = Router()
-const { reqBody, reqParams, reqQuery } = validateZodSchema
-const {userIdSchema} = userSchema
 
 //POST
-router.post("/", reqBody(userSchema.createUserSchema), userController.createUser )
-router.post("/login", reqBody(userSchema.getSessionSchema), userController.getSession )
-router.post("/subscription", auth, reqBody(userSchema.subscriptionSchema), userController.updateSubscription)
-router.post("/refresh-auth", userController.updateRefreshToken)
-router.post("/cloudonary-signature", auth, userController.getCloudinarySignature)
+router.post( "/create", validate(userSchema.createUserSchema,"body"), userController.createUser )
+router.post( "/login", validate(userSchema.getSessionSchema,"body"), userController.getSession )
+router.post( "/subscribe", auth(), validate(baseSchema.idSchema,"params"), userController.updateUserStatusSubscription)
+router.post( "/refresh-auth", userController.updateRefreshToken)
+router.post( "/cloudonary-signature", auth(false), userController.getCloudinarySignature)
 
 //GET
-router.get( "/", reqQuery(userSchema.getUsersSchema), userController.getUsers )
-router.get( "/getuser/:userId", reqParams(userIdSchema), userController.getUserById )
-
+router.get( "/channel/:name", validate(baseSchema.nameSchema,"params"), userController.getChannelInfo )
+router.get( "/subscribers/:name", validate(baseSchema.paginationSchema, "query"), validate(baseSchema.nameSchema,"params"), userController.getSubscribers )
+router.get( "/subscriptions", auth(), userController.getSubscriptions )
 //DELETE
-router.delete( "/deleteuser", auth, reqBody(userSchema.userIdSchema), userController.deleteUserById )
+router.delete( "/delete", auth(), validate(baseSchema.idSchema,"body"), userController.deleteUser )
 
 export default router
 

@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.10.1
- * Query Engine version: 9b628578b3b7cae625e8c927178f15a170e74a9c
+ * Prisma Client JS version: 6.18.0
+ * Query Engine version: 34b5a692b7bd79939a9a2c3ef97d816e749cda2f
  */
 Prisma.prismaVersion = {
-  client: "6.10.1",
-  engine: "9b628578b3b7cae625e8c927178f15a170e74a9c"
+  client: "6.18.0",
+  engine: "34b5a692b7bd79939a9a2c3ef97d816e749cda2f"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -133,6 +133,20 @@ exports.Prisma.UserScalarFieldEnum = {
   deleted: 'deleted'
 };
 
+exports.Prisma.ChannelSubscribersScalarFieldEnum = {
+  channelId: 'channelId',
+  subscriberId: 'subscriberId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.UserVideoStatusScalarFieldEnum = {
+  isLike: 'isLike',
+  videoId: 'videoId',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.VideoScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -147,11 +161,20 @@ exports.Prisma.VideoScalarFieldEnum = {
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  tags: 'tags',
-  category: 'category',
+  categoryId: 'categoryId',
   rating: 'rating',
   deleted: 'deleted',
   deletedAt: 'deletedAt'
+};
+
+exports.Prisma.CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name'
+};
+
+exports.Prisma.TagScalarFieldEnum = {
+  id: 'id',
+  name: 'name'
 };
 
 exports.Prisma.CommentScalarFieldEnum = {
@@ -179,9 +202,15 @@ exports.Prisma.NotificationScalarFieldEnum = {
   commentId: 'commentId',
   messageId: 'messageId',
   userEmmiterId: 'userEmmiterId',
-  read: 'read',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserNotificationScalarFieldEnum = {
+  notificationId: 'notificationId',
+  userDestinationId: 'userDestinationId',
+  read: 'read',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.NotificationTypeScalarFieldEnum = {
@@ -216,10 +245,15 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  ChannelSubscribers: 'ChannelSubscribers',
+  UserVideoStatus: 'UserVideoStatus',
   Video: 'Video',
+  Category: 'Category',
+  Tag: 'Tag',
   Comment: 'Comment',
   Playlist: 'Playlist',
   Notification: 'Notification',
+  UserNotification: 'UserNotification',
   NotificationType: 'NotificationType',
   Message: 'Message'
 };

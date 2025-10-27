@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import notificationService from "../services/notification.service";
-import { NotificationDto } from "../utils/zod/notification/dto"
-import { UserDto } from "../utils/zod/user/dto"
+import { NotificationDto } from "../utils/validations/notification/dto"
+import { UserDto } from "../utils/validations/user/dto"
 
 export default {
     createComment: async(req:Request,res:Response)=>{
