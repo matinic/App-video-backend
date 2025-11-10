@@ -15,13 +15,10 @@ router.post( "/refresh-auth", userController.updateRefreshToken)
 router.post( "/cloudonary-signature", auth(false), userController.getCloudinarySignature)
 
 //GET
-router.get( "/channel/:name", validate(baseSchema.nameSchema,"params"), userController.getChannelInfo )
+router.get( "/channel", validate(baseSchema.nameSchema,"query"), userController.getChannelInfo )
 router.get( "/subscribers/:name", validate(baseSchema.paginationSchema, "query"), validate(baseSchema.nameSchema,"params"), userController.getSubscribers )
 router.get( "/subscriptions", auth(), userController.getSubscriptions )
 //DELETE
 router.delete( "/delete", auth(), validate(baseSchema.idSchema,"body"), userController.deleteUser )
 
 export default router
-
-
-

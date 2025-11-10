@@ -1,56 +1,8 @@
-import { Operation } from "@prisma/client/runtime/library";
 import { PrismaClient, Prisma } from "@/generated/prisma";
 import { UserDto }   from "../utils/validations/user/dto"
 import { BaseDto } from "@/utils/validations/base.dto";
 
-const prismaDefineExtension = Prisma.defineExtension({
-    name: "user.service PrismaClient extension",
-    model:{
-        user:{
-            selectDataUser<T extends Operation>(
-                args: Prisma.Args<typeof user,  T> 
-            ){
-                args = {
-                        ...args,
-                        where:{ ...args.where, deleted: false },
-                        select: {
-                            ...args.select,
-                            id: true,
-                            name: true,
-                            image: true,
-                        } 
-                    }
-                return args
-            }
-        }
-    }
-})
-const prismaClient = new PrismaClient()
-
-const prismExtendedA = prismaClient.$extends(prismaDefineExtension)
-
-const { user, channelSubscribers, ...prisma } = prismExtendedA.$extends({
-    query: {
-        user: {
-                async findUnique({ model, operation, args, query }){
-                    const userQueryArgs = user.selectDataUser<typeof operation>(args)
-                    args = userQueryArgs
-                    return query(args) 
-                },
-                async findMany({ model, operation, args, query }){
-                    const userQueryArgs = user.selectDataUser<typeof operation>(args)
-                    args = userQueryArgs
-                    return query(args) 
-                },
-                async findFirst({ model, operation, args, query }){
-                    const userQueryArgs = user.selectDataUser<typeof operation>(args)
-                    args = userQueryArgs
-                    return query(args) 
-                }
-            }
-        }
-    },
-);
+const { user, channelSubscribers } =  new PrismaClient()
 
 export default {
     async createUser( data: UserDto.CreateUserDto){

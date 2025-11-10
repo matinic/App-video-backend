@@ -1,28 +1,38 @@
 import {z} from "zod"
 import { Request, Response, NextFunction } from "express"
 
-export default<T extends z.ZodTypeAny> (schema:T, from:"body" | "params" | "query" )=>{
+type validate<T> = {
+    body: T,
+    params?: T,
+    query?: T
+} | {
+    body?: T,
+    params: T,
+    query?: T
+} | {
+    body?: T,
+    params?: T,
+    query: T
+}
+
+export default <T extends z.ZodTypeAny>( { body, params, query }: validate<T> )=>{
     return (req:Request, res:Response, next:NextFunction) => {
-        if(from){
-            const { data, success, error } = schema.safeParse(req[from])
-            if(!success){
-                console.error(error.format())
-                res.status(200).json({
-                    message: error.format()
-                })
-                return
-            }
-            if(from === "body"){
-                req.body = data
-            }
-            if(from === "query"){
-                req.validatedQuery = data
-            }
-            next()
-            return
+        if(body){
+            const { data, success, error } = body.safeParse(req.body)
+            if(!success) res.status(404).json(error.format)
+            req.validatedBody = data
         }
-        res.status(500).json({error: "Server Error"})
-        console.log("Invalid info type")
+        if(params){
+            const { data, success, error } = params.safeParse(req.params)
+            if(!success) res.status(404).json(error.format)
+            req.validatedParams = data
+        }
+        if(query){
+            const {data, success, error } = query.safeParse(req.query)
+            if(!success) res.status(404).json(error.format)
+            req.validatedQuery = data
+        }
+        next()
         return
     }
 }

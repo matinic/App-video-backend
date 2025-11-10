@@ -5,9 +5,9 @@ export const tagSchema = z.array(z.object({name: z.string().uuid()})).optional()
 
 export const orderByVideosSchema = z.object({
     orderBy: z.object({
-        createdAt: orderBySchema,
-        views: orderBySchema,
-        title: orderBySchema,
+        createdAt: orderBySchema.default("asc"),
+        views: orderBySchema.optional(),
+        title: orderBySchema.optional(),
     }).optional()
 })
 

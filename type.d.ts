@@ -5,7 +5,9 @@ declare global {
   namespace Express {
     interface Request {
       user: UserDto.AuthUserDto,
-      validatedQuery: any
+      validatedBody?: any,
+      validatedParams?: any,
+      validatedQuery?: any,
     }
   }
 }

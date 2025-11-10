@@ -25,14 +25,19 @@ export default  {
         return;
       }
       const encryptedPassword = await encryptPassword( password )
-      await userService.createUser({
+      const newUser = await userService.createUser({
         ...req.body,
         password: encryptedPassword
       });  
-      res.status(201).json({message:"user created successfully"}).redirect("/login");
+      res.status(201).json({
+        message:"user created successfully",
+        userId: newUser.id
+      }) ;
+      return
     }catch (err) {
       if(err instanceof Error){
         res.status(500).json({message: err.message})
+        return
       }
     }
   },

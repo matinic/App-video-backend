@@ -16,24 +16,17 @@ export const passwordSchema = z.object({
     password: z.string().max(32)
 })
 
-export const cursorSchema = z.object({
+export const orderBySchema = z.enum(["asc","desc"])
+
+export const paginationSchema = z.object({
+    take: z.coerce.number().positive().default(12).optional(),
     cursor: z.object({
-        id: idSchema.shape.id,
+        ...idSchema.shape,
         createdAt: z.date()
     }).optional()
 })
 
-export const paginationSchema = z.object({
-    take: z.coerce.number().positive().default(12).optional(),
-    ...cursorSchema.shape
-})
 
-export const  orderBySchema = z.enum(["asc","desc"]).default("asc")
-
-export const paginationAndOrder = z.object({
-    ...paginationSchema.shape,
-    orderBySchema
-})
 
 
 
