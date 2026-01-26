@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "rootDir": "./src",
+    "target": "ES2023",
+    "strict": true,
+    "esModuleInterop": true,
+     "paths": {
+      "@/*": ["src/*"],
+      "@test/*": ["test/*"]
+    },
+    "ignoreDeprecations": "5.0"
+  }
+}
