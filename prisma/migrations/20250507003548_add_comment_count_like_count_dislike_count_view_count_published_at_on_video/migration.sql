@@ -1,9 +1,0 @@
--- AlterTable
-ALTER TABLE "Video" ADD COLUMN     "category" TEXT,
-ADD COLUMN     "commentCount" INTEGER NOT NULL DEFAULT 0,
-ADD COLUMN     "dislikeCount" INTEGER NOT NULL DEFAULT 0,
-ADD COLUMN     "likeCount" INTEGER NOT NULL DEFAULT 0,
-ADD COLUMN     "publishedAt" TIMESTAMP(3),
-ADD COLUMN     "rating" DOUBLE PRECISION,
-ADD COLUMN     "tags" TEXT[],
-ADD COLUMN     "viewCount" INTEGER NOT NULL DEFAULT 0;
