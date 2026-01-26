@@ -1,13 +1,6 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "generated/prisma";
-import { UserDto }   from "@/utils/validations/user/dto"
-import { BaseDto } from "@/utils/validations/base.dto";
-
-const connectionString = `${process.env.DATABASE_URL}`;
-
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
-
+import { UserDto }   from "@/lib/validations/user/dto"
+import { BaseDto } from "@/lib/validations/base.dto";
+import prisma from "@/lib/client"
 
 export default {
     async createUser( data: UserDto.CreateUserDto){

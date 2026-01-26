@@ -1,13 +1,11 @@
-import { NotificationDto }   from "../../utils/validations/notification/dto"
-import { BaseDto } from "@/utils/validations/base.dto";
-import notificationType from '@/utils/model.utils/notification/data'
-
-
-const { notification, userNotification, user } = prismaInstance
+import { NotificationDto }   from "@/lib/validations/notification/dto"
+import { BaseDto } from "@/lib/validations/base.dto";
+import notificationType from '@/lib/notification/data'
+import prisma from "@/lib/client"
 
 export default {
     async createNewSubscriptionNotification({ userEmmiterId, userDestinationId }: NotificationDto.CreateNewSubscriptionNotificationDto){
-        return await notification.create({
+        return await prisma.notification.create({
             data: {
                 userEmmiter: {
                     connect: { id: userEmmiterId }
@@ -22,7 +20,7 @@ export default {
         })
     },
     async createNewVideoNotification({ userEmmiterId, videoId, userDestinationIdList }: NotificationDto.CreateNewVideoNotificationDto){
-        return await notification.create({
+        return await prisma.notification.create({
             data:{
                 userEmmiter: {
                     connect: { id: userEmmiterId }
@@ -40,7 +38,7 @@ export default {
         }) 
     },
     async createNewCommentOnVideoNotification({ userEmmiterId, commentId, videoId, userDestinationId }: NotificationDto.CreateNewCommentOnVideoNotificationDto){
-        return await notification.create({
+        return await prisma.notification.create({
             data:  {
                 userEmmiter: {
                     connect: { id: userEmmiterId }
@@ -61,7 +59,7 @@ export default {
         })
     },
     async createNewCommentResponseNotification({ userEmmiterId, responseId, userDestinationId }: NotificationDto.CreateNewCommentResponseNotificationDto){
-        return await notification.create({
+        return await prisma.notification.create({
             data: {
                 userEmmiter: {
                     connect: { id: userEmmiterId }
@@ -79,7 +77,7 @@ export default {
         })
     },
     async createNewMessageNotification({ userEmmiterId, messageId, userDestinationId }: NotificationDto.CreateNewMessageNotificationDto){
-        return await notification.create({
+        return await prisma.notification.create({
             data: {
                 userEmmiter: {
                     connect: { id: userEmmiterId }
@@ -97,7 +95,7 @@ export default {
         })
     },
     async getNotification( { id }: BaseDto.IdDto ){
-        return await userNotification.findMany({
+        return await prisma.userNotification.findMany({
             where:{
                 userDestinationId: id
             },
@@ -145,7 +143,7 @@ export default {
         })
   },
   async getNotificationCount({ id }: BaseDto.IdDto ){
-        return await userNotification.count({
+        return await prisma.userNotification.count({
             where: {
                 userDestinationId: id,
                 read: false,
@@ -153,7 +151,7 @@ export default {
         })
   },
   async updateNotification( { id }: BaseDto.IdDto ){
-        return await userNotification.updateMany({
+        return await prisma.userNotification.updateMany({
             where: {
                 userDestinationId: id,
                 read: false

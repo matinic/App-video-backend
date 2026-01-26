@@ -1,10 +1,10 @@
 import { Router } from "express";
 import commentController from "@/controllers/comment.controller";
-import * as commentSchema from "@/utils/validations/comment/schema";
-import * as baseSchema from "@/utils/validations/base.schema";
-import * as videoSchema from "@/utils/validations/video/schema"
-import auth  from "@/utils/middlewares/auth.jwt"
-import validate from "@/utils/middlewares/validate/middleware";
+import * as commentSchema from "@/lib/validations/comment/schema";
+import * as baseSchema from "@/lib/validations/base.schema";
+import * as videoSchema from "@/lib/validations/video/schema"
+import auth  from "@/lib/middlewares/auth.jwt"
+import validate from "@/lib/middlewares/validate/middleware";
 
 
 const router = Router()

@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import videoService  from "../src/services/video.service";
-import notificationService from "@/src/services/notification.service"
-import userService from "@/src/services/user.service";
+import videoService from "@/services/video.service";
+import notificationService from "@/services/notification.service"
+import userService from "@/services/user.service";
 
 export default {
   async createVideo(req:Request, res:Response){
     try {
-      const data = req.body
+      const data = req.validatedBody
       const { id } = req.user
       const createdVideo = await videoService.createVideo(data)
 
@@ -29,7 +29,7 @@ export default {
   },
   async getVideoById (req:Request, res:Response){
     try {
-      const { id } = req.params
+      const { id } = req.validatedParams
       const foundVideo = await videoService.getVideoById({ id })
       if(!foundVideo){
         res.status(404).json({message: "Video not found"})
@@ -46,11 +46,11 @@ export default {
   },
   async getVideosPublished(req:Request, res:Response){ 
     try { 
-      const data = req.body
+      const data = req.validatedQuery
       const videos = await videoService.getVideosPublished(data);
       res.status(200).json({
         videos,
-        cursor: req.body.skip + 1,
+        cursor: req.validatedQuery.skip + 1,
       });
       return
     } catch ( err ) {
@@ -64,11 +64,11 @@ export default {
   },
   async getVideosBySearch(req:Request, res:Response){
     try {
-      const data = req.validatedQuery 
+      const data = req.validatedBody 
       const videos = await videoService.getVideosBySearch(data);
       res.status(200).json({
         videos,
-        cursor: req.body.skip + 1
+        cursor: req.validatedBody.skip + 1
       });
     } catch (error) { 
        if(error instanceof Error){
@@ -79,15 +79,15 @@ export default {
   },
   async getChannelVideos(req:Request, res:Response){ 
     try {
-      const { name } = req.params 
-      const data = req.body 
+      const { name } = req.validatedParams 
+      const data = req.validatedBody 
       const videos = await videoService.getChannelVideos({
         name,
         ...data
       })
       res.status(200).json({
         videos,
-        cursor: req.body.skip + 1, 
+        cursor: req.validatedBody.skip + 1, 
       })
       return 
     } catch (error) {
@@ -100,14 +100,14 @@ export default {
   async getChannelUnpublishedVideos(req:Request, res:Response){
     try {
       const { name } = req.user
-      const data = req.body 
+      const data = req.validatedBody 
       const videos = await videoService.getChannelUnpublishedVideos({ 
         name,
         ...data
       })
       res.status(200).json({
         videos,
-        cursor: req.body.skip + 1, 
+        cursor: req.validatedBody.skip + 1, 
       })
       return 
     } catch (error) {
@@ -119,7 +119,7 @@ export default {
   },
   async deleteVideo(req:Request, res:Response){
     try {
-      const { id } = req.body 
+      const { id } = req.validatedParams 
       await videoService.deleteVideo( { id } )
       res.status(200).json({ message: "Video Deleted" })
       return 
@@ -133,7 +133,7 @@ export default {
   },
   async updateVideo(req:Request,res:Response){
     try {
-      const data = req.body 
+      const data = req.validatedBody 
       const video = await videoService.updateVideo(data)
       res.status(200).json(video)
       return 
@@ -147,7 +147,7 @@ export default {
   },
   async updateLikeVideoStatus(req:Request, res:Response){
     try {
-      const data = req.body
+      const data = req.validatedParams
       await videoService.upsertUserVideoLikeStatus(data)
       res.status(200).json("Video likes status updated")
       return
@@ -162,7 +162,7 @@ export default {
   async getUserVideoStatus(req:Request, res:Response){
     try {
       const { id } = req.user
-      const { videoId } = req.body
+      const { videoId } = req.validatedBody
       const status = await videoService.getUserVideoStatus({ userId: id, videoId})
       if(!status) {
         res.status(400).json({ message: "Relation not found"})
