@@ -1,12 +1,12 @@
 
-import { CommentDto } from "@/lib/validations/comment/dto"
-import client from "@/lib/client"
+import { CommentDto } from "@/lib/zod/dto/comment"
+import { PrismaClient } from "@prisma/client"
 
-const { comment } = client
+class CommentService {
+    constructor(private prisma: PrismaClient) {}
 
-export default {
     async createComment ({content, videoId, userId}: CommentDto.NewCommentDto ){
-        return comment.create({
+        return this.prisma.comment.create({
             data:{
                 content,
                 downvotes: 0,
@@ -23,25 +23,25 @@ export default {
                 }
             }
         })
-    },
+    }
     async getCommentsFromVideo ({ videoId, ...paginationAndOrder}: CommentDto.GetVideoCommentsDto){
-        return comment.findMany({
+        return this.prisma.comment.findMany({
             where: {
                 videoId
             },
             ...paginationAndOrder
         })
-    },
+    }
     async getUserComments ({ userId, ...paginationAndOrder}: CommentDto.GetUserCommentsDto){
-        return comment.findMany({
+        return this.prisma.comment.findMany({
             where:{
                 userId
             },
             ...paginationAndOrder
         })
-    },
+    }
     async updateComment ({ id, content }: CommentDto.UpdateCommentDto){
-        return comment.update({
+        return this.prisma.comment.update({
             where:{
                 id
             },
@@ -49,9 +49,9 @@ export default {
                 content
             }
         })
-    },
+    }
     async deleteComment ( id: string ){
-        return comment.update({
+        return this.prisma.comment.update({
             where: {
                 id
             },
@@ -60,7 +60,9 @@ export default {
             }
         })
     }
-} 
+}
+
+export default CommentService; 
 
 
 

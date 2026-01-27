@@ -1,8 +1,8 @@
 import { Router } from "express";
 import commentController from "@/controllers/comment.controller";
-import * as commentSchema from "@/lib/validations/comment/schema";
-import * as baseSchema from "@/lib/validations/base.schema";
-import * as videoSchema from "@/lib/validations/video/schema"
+import * as commentSchema from "@/lib/zod/schemas/comment";
+import * as baseSchema from "@/lib/zod/schemas/base";
+import * as videoSchema from "@/lib/zod/schemas/video"
 import auth  from "@/lib/middlewares/auth.jwt"
 import validate from "@/lib/middlewares/validate/middleware";
 

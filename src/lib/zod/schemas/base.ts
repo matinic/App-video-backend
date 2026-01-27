@@ -1,7 +1,7 @@
 import {z} from "zod"
 
 export const idSchema = z.object({
-    id: z.string().uuid()
+    id: z.uuid()
 })
 
 export const nameSchema = z.object({
@@ -9,7 +9,7 @@ export const nameSchema = z.object({
 })
 
 export const emailSchema = z.object({
-    email: z.string().email()
+    email: z.email()
 })
 
 export const passwordSchema = z.object({

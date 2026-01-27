@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { idSchema } from "../base.schema"
+import { idSchema } from "./base"
 
 
 export const createNewSubscriptionNotificationSchema = z.object({

@@ -1,41 +1,11 @@
-import { PrismaClient } from "../generated/prisma";
-import { VideoDto } from "../../utils/validations/video/dto";
-import { BaseDto } from "@/utils/validations/base.dto"
+import { PrismaClient } from "@prisma/client";
+import { VideoDto } from "@/lib/zod/dto/video";
+import { BaseDto } from "@/lib/zod/dto/base"
 
-const  { video, userVideoStatus } = new PrismaClient().$extends({
-    query:{
-        video:{
-            async findMany({ args, query }){
-                args = {
-                    ...args,
-                    where:{ ...args.where, deleted: false },
-                    select: {
-                        ...args.select,
-                        id: true,
-                        title: true,
-                        description: true,
-                        url: true,
-                        thumbnail: true,
-                        views: true,
-                    }
-                }
-                return query(args)
-            },
-            async update({args, query}){
-                args = {
-                    ...args,
-                    where: {
-                        ...args.where,
-                        deleted: false
-                    }
-                }
-                return query(args)
-            }
-    }    
-}});
-export default {   
+export default class VideoService {
+    constructor(private prisma:PrismaClient){}
     async createVideo( data:VideoDto.CreateVideoDto ){
-        return await video.create({
+        return await this.prisma.video.create({
             data:{
                 author: {
                     connect: {
@@ -58,14 +28,14 @@ export default {
                 thumbnail: data.thumbnail,
             }
         })
-    },
+    }
 
     async getVideoById({ id }: BaseDto.IdDto){
-        return await video.findUnique({where: { id }})
-    },
+        return await this.prisma.video.findUnique({where: { id }})
+    }
 
     async getVideosPublished( { orderBy, ...pagination }: VideoDto.PaginationAndOrderVideosDto ){
-        return await video.findMany({
+        return await this.prisma.video.findMany({
             where:{
                 published: true,
                 deleted: false
@@ -73,9 +43,9 @@ export default {
             orderBy,
             ...pagination,
         })
-    },
+    }
     async getChannelVideos( { name, orderBy, ...pagination }: VideoDto.GetChannelVideosDto ){
-        return await video.findMany({
+        return await this.prisma.video.findMany({
             where:{
                 author: { name },
                 published: true,
@@ -83,9 +53,9 @@ export default {
             orderBy,
             ...pagination
         })
-    },
+    }
     async getChannelUnpublishedVideos( { name, orderBy, ...pagination }: VideoDto.GetChannelVideosDto ){
-        return await video.findMany({
+        return await this.prisma.video.findMany({
             where:{
                 author: { name },
                 published: false,
@@ -93,9 +63,9 @@ export default {
             orderBy,
             ...pagination
         })
-    },
+    }
     async getVideosBySearch( { keywords, filterParams,  orderBy, ...pagination }: VideoDto.GetVideosBySearchDto ){
-        return await video.findMany({
+        return await this.prisma.video.findMany({
             where: {
                 AND: [
                     {
@@ -128,28 +98,30 @@ export default {
             orderBy,
             ...pagination,
         });
-    },
+    }
 
     async deleteVideo({ id }:BaseDto.IdDto){
-        return await video.update({
+        return await this.prisma.video.update({
             where: { id },
             data: { deleted: true }
         })
-    },
+    }
+
     async updateVideoViews( id:string, views:number ){
-        return await video.update({
+        return await this.prisma.video.update({
             where: {id},
             data: { views }
         })
-    },
+    }
+
     async updateVideo ({ videoId, ...videoData }:VideoDto.UpdateVideoDto){
-        return await video.update({
+        return await this.prisma.video.update({
             where: { id: videoId },
             data: videoData
         })
-    },
+    }
     async upsertUserVideoLikeStatus({ userId, videoId, isLike }:VideoDto.VideoUserStatusDto){
-        return await userVideoStatus.upsert({
+        return await this.prisma.userVideoStatus.upsert({
             where:{
                 videoId_userId:{
                     userId,
@@ -173,9 +145,9 @@ export default {
                 isLike
             }           
         })
-    },
+    }
     async deleteUserVideoStatus({ userId, videoId }: VideoDto.VideoUserDto){
-        return await userVideoStatus.delete({
+        return await this.prisma.userVideoStatus.delete({
             where:{
                 videoId_userId:{
                     userId,
@@ -183,9 +155,9 @@ export default {
                 }
             },
         })
-    },
-    async getEvaluatedVideos({ userId, isLike, ...pagination }: VideoDto.GetEvaluatedVideosWithPaginationDto ){
-        return await userVideoStatus.findMany({
+    }
+    async getEvaluatedVideos({ userId, videoId, isLike, ...pagination }: VideoDto.GetEvaluatedVideosWithPaginationDto ){
+        return await this.prisma.userVideoStatus.findMany({
             where:{
                 userId,
                 isLike
@@ -208,9 +180,9 @@ export default {
                 },
                 ...pagination
             })
-        },
+    }
     async getUserVideoStatus({ userId, videoId }: VideoDto.VideoUserDto ){
-        return await userVideoStatus.findUnique({
+        return await this.prisma.userVideoStatus.findUnique({
             where:{
                 videoId_userId:{
                     userId,

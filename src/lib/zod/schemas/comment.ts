@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { idSchema, orderBySchema, paginationSchema } from "../base.schema"
+import { idSchema, orderBySchema, paginationSchema } from "./base"
 
 export const orderByCommentSchema = z.object({
     orderBy: z.object({

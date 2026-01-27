@@ -1,5 +1,5 @@
 import {z} from "zod"
-import * as commentSchema from "./schema"
+import * as commentSchema from "../schemas/comment"
 
 
 export namespace CommentDto  {

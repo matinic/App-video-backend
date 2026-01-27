@@ -1,5 +1,5 @@
 import {z} from "zod"
-import  * as userSchema from "./schema"
+import * as userSchema from "../schemas/user"
 
 export namespace UserDto {
     export type CreateUserDto = z.infer<typeof userSchema.createUserSchema>

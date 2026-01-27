@@ -1,31 +1,32 @@
 import dotenv from 'dotenv'
 dotenv.config()
 import { Request, Response } from "express";
-import userService from "@/services/user.service";
+import UserService from "@/services/user.service";
 import verifyToken from "@/lib/jwt/verify.token"
 import { refreshToken, accessToken } from "@/lib/jwt/generate.token"
-import { UserDto } from "@/lib/validations/user/dto"
+import { UserDto } from "@/lib/zod/dto/user"
 import { comparePassword, encryptPassword } from "@/lib/bcrypt"
 import { v2 } from "cloudinary"
 import process from "process"
-import notificationService from "@/services/notification.service"
+import NotificationService from "@/services/notification.service"
 
-export default  {
+class UserController {
+    constructor(private userService: UserService, private notificationService: NotificationService) {}
   async createUser(req:Request, res:Response){
     try {
       const { name, email, password } = req.validatedBody
-      const userByName = await userService.checkUserName( { name } )
+      const userByName = await this.userService.checkUserName( { name } )
       if (userByName) {
         res.status(409).json({ message: "User already exist!" });
         return;
       }
-      const userByEmail = await userService.checkUserEmail( { email } )
+      const userByEmail = await this.userService.checkUserEmail( { email } )
       if (userByEmail) {
         res.status(409).json({ message: "Email already in use, choose other!" });
         return;
       }
       const encryptedPassword = await encryptPassword( password )
-      const newUser = await userService.createUser({
+      const newUser = await this.userService.createUser({
         ...req.validatedBody,
         password: encryptedPassword
       });  
@@ -40,7 +41,7 @@ export default  {
         return
       }
     }
-  },
+  }
   // Function to get a user by ID
   // This function retrieves a user by their ID from the database
   async getChannelInfo(req:Request, res:Response){
@@ -48,11 +49,11 @@ export default  {
       const data = req.user
       const { name } = req.validatedParams
       if( data?.name === name ){
-        const foundUser = await userService.getAuthChannelInfo( req.user )
+        const foundUser = await this.userService.getAuthChannelInfo( req.user )
         res.status(200).json( foundUser )
         return 
       }
-      const foundUser = await userService.getChannelInfo( { name } )
+      const foundUser = await this.userService.getChannelInfo( { name } )
       if(!foundUser){
         res.status(404).json({message: "User not found"})
         return
@@ -65,11 +66,11 @@ export default  {
           console.log(err.message)
       }
     }
-  },
+  }
   async deleteUser(req:Request, res:Response){
     try {
       const { id } = req.user
-      const deletedUser = await userService.deleteUserById( { id } )
+      const deletedUser = await this.userService.deleteUserById( { id } )
       res.status(200).json({
         message: "User deleted successfully",
         userId: deletedUser.id,
@@ -83,11 +84,11 @@ export default  {
         return;
       }
     }
-  },
+  }
   async getSession(req:Request, res:Response){
     try {
       const { nameOrEmail, password } = req.validatedBody;
-      const foundUser = await userService.getUserByNameOrEmail( nameOrEmail )
+      const foundUser = await this.userService.getUserByNameOrEmail( nameOrEmail )
       if(!foundUser) {
         res.status(404).json({message: "User not found"})
         return;
@@ -103,7 +104,7 @@ export default  {
       }
       const newRefreshToken = refreshToken(userData)
       const newAccessToken = accessToken(userData)
-      await userService.updateRefreshToken({
+      await this.userService.updateRefreshToken({
         userId: foundUser.id,
         refreshToken: newRefreshToken
       })
@@ -127,18 +128,18 @@ export default  {
         res.status(500).json({message: "Server Error"})
       }
     }
-  },
+  }
   async updateUserStatusSubscription(req:Request, res:Response){
     try {
       const { id } = req.validatedParams
       const data = req.user
-      const status = await userService.checkSubscription({
+      const status = await this.userService.checkSubscription({
         channelId: id,
         subscriberId: data.id
       })
       if(!status){
-        await userService.createSubscription(req.validatedBody)
-        await notificationService.createNewSubscriptionNotification({
+        await this.userService.createSubscription(req.validatedBody)
+        await this.notificationService.createNewSubscriptionNotification({
           userEmmiterId: data.id,
           userDestinationId: id
         })
@@ -146,7 +147,7 @@ export default  {
         return 
       }
       else{
-        await userService.deleteSubscription(req.validatedBody)
+        await this.userService.deleteSubscription(req.validatedBody)
         res.status(200).json({message: "Subscription deleted"})
         return
       }
@@ -158,12 +159,12 @@ export default  {
         })
       }
     }
-  },
+  }
   async getSubscribers(req:Request, res:Response){
     try {
       const { id } = req.user
       const pagination = req.validatedBody
-      const subscribers = await userService.getSubscribers({
+      const subscribers = await this.userService.getSubscribers({
         id,
         ...pagination
       })
@@ -175,12 +176,12 @@ export default  {
         res.status(500).json({message: "Server Error"})
       }
     }
-  },
+  }
   async getSubscriptions(req:Request, res:Response){
     try {
       const { id } = req.user
       const pagination = req.validatedBody
-      const subcriptions = await userService.getSubscriptions({
+      const subcriptions = await this.userService.getSubscriptions({
         id,
         ...pagination
       })
@@ -193,12 +194,12 @@ export default  {
         return
       }
     }
-  },
+  }
   async checkSubscription (req:Request, res:Response){
     try{
       const { id } = req.user
       const { channelId } = req.validatedParams
-      const isSubscribed = await userService.checkSubscription({
+      const isSubscribed = await this.userService.checkSubscription({
         subscriberId: id,
         channelId
       })
@@ -213,7 +214,7 @@ export default  {
         return
       }
     }
-  },
+  }
   async getCloudinarySignature(req:Request, res:Response){
     try {
       let body = req.validatedBody
@@ -235,8 +236,8 @@ export default  {
       }
       return 
     }
-  },
-  updateRefreshToken: async(req:Request,res:Response)=>{
+  }
+  async updateRefreshToken(req:Request,res:Response){
     try {
       const cookies = req.cookies
       if(!cookies.jwt){ 
@@ -257,3 +258,5 @@ export default  {
     }
   }
 }
+
+export default UserController;

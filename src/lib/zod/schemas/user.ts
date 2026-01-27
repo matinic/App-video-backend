@@ -1,14 +1,14 @@
-import { z } from "zod"
+import { z, ZodAny } from "zod"
 import {
     nameSchema,
     emailSchema,
     passwordSchema,
     orderBySchema,
     paginationSchema
-} from "../base.schema"
+} from "./base"
 import {
     idSchema
-} from "../base.schema"
+} from "./base"
 
 export const orderUsersBySchema = z.object({
     createdAt: orderBySchema.optional(),

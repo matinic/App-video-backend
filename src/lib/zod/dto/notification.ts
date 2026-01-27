@@ -1,5 +1,5 @@
 import { z } from "zod"
-import * as notificationSchema from "./schema"
+import * as notificationSchema from "../schemas/notification"
 
 export namespace NotificationDto  {
     export type CreateNewSubscriptionNotificationDto = z.infer<typeof notificationSchema.createNewSubscriptionNotificationSchema>

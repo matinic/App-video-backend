@@ -1,4 +1,4 @@
-import { idSchema, nameSchema, paginationSchema, orderBySchema } from "../base.schema"
+import { idSchema, nameSchema, paginationSchema, orderBySchema } from "./base"
 import { z } from "zod"
 
 export const tagSchema = z.array(z.object({name: z.string().uuid()})).optional()

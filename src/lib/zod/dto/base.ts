@@ -1,4 +1,4 @@
-import * as baseSchema from "./base.schema"
+import * as baseSchema from "../schemas/base"
 import {z} from "zod"
 
 export namespace BaseDto {

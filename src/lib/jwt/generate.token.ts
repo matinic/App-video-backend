@@ -1,5 +1,5 @@
 import * as jwt from "jsonwebtoken"
-import { UserDto } from '../validations/user/dto'
+import { UserDto } from '../zod/dto/user'
 import {access, refresh} from "./key"
 
 export const refreshToken = ( userData:UserDto.AuthUserDto )=>{

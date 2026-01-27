@@ -1,4 +1,4 @@
-import { UserDto } from "@/lib/validations/user/dto"
+import { UserDto } from "@/lib/zod/dto/user"
 
 declare global {
   namespace Express {

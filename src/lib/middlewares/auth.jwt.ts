@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import { NextFunction, Request, Response } from "express"
 import verifyToken from "../jwt/verify.token"
-import { UserDto } from '../validations/user/dto'
+import { UserDto } from '../zod/dto/user'
 
 export default ( strict = true )=>{
   return ( async( req:Request, res:Response, next:NextFunction )=>{

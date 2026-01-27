@@ -1,8 +1,10 @@
-import * as jwt from "jsonwebtoken"
-import { Verify } from "./dto"
-import {access, refresh} from "./key"
+import jwt from "jsonwebtoken"
+import { access, refresh } from "./key"
 
-export default async (verify:Verify): Promise<jwt.JwtPayload> => {
+export default async (verify:{
+  token: string
+  option: "access" | "refresh"
+}): Promise<jwt.JwtPayload> => {
   try {
     if(verify.option ===  "access"){
       const decoded = jwt.verify(verify.token, access);

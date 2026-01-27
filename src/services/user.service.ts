@@ -1,23 +1,24 @@
-import { UserDto }   from "@/lib/validations/user/dto"
-import { BaseDto } from "@/lib/validations/base.dto";
-import prisma from "@/lib/client"
+import { UserDto }   from "@/lib/zod/dto/user"
+import { BaseDto } from "@/lib/zod/dto/base";
+import { PrismaClient } from "@prisma/client"
 
-export default {
+export default class UserService {
+    constructor(private prisma: PrismaClient){}
     async createUser( data: UserDto.CreateUserDto){
-        return await prisma.user.create({ data: {
+        return await this.prisma.user.create({ data: {
             ...data
         }});
-    },
+    }
     async deleteUserById( { id }: BaseDto.IdDto){
-        return await prisma.user.update({
+        return await this.prisma.user.update({
             where: { id },
             data:{
                 deleted: true
             }
         })
-    },
+    }
     async getUserByNameOrEmail( data: string ){
-        return await prisma.user.findFirst({
+        return await this.prisma.user.findFirst({
             where: {
                 OR: [{ name: data }, { email: data }]
             },
@@ -29,23 +30,23 @@ export default {
                 image: true
             }
         }) 
-    },
+    }
     async checkUserEmail( { email }: BaseDto.EmailDto ){
-        return await prisma.user.count({
+        return await this.prisma.user.count({
             where:{
                 email
             }
         })
-    },
+    }
     async checkUserName ( { name }: BaseDto.NameDto ){
-        return await prisma.user.count({
+        return await this.prisma.user.count({
             where: {
                 name,
             }
         })
-    },
+    }
     async getChannelInfo( { name }: BaseDto.NameDto ){
-        return await prisma.user.findUnique({
+        return await this.prisma.user.findUnique({
             where: { name },
             select: {
                 id: true,
@@ -64,9 +65,9 @@ export default {
                 playlists: true,
             }
         })
-    },
+    }
     async getAuthChannelInfo( data: UserDto.AuthUserDto ){
-        return await prisma.user.findUnique({
+        return await this.prisma.user.findUnique({
             where: { ...data },
             select: {
                 id: true,
@@ -108,15 +109,15 @@ export default {
                 playlists: true,
             }
         })
-    },
+    }
     async updateRefreshToken({ userId, refreshToken }:UserDto.UpdateTokenDto){
-        return await prisma.user.update({
+        return await this.prisma.user.update({
             where: { id: userId },
             data: { refreshToken }   
         })
-    },
+    }
     async createSubscription({ channelId, subscriberId }:UserDto.SubscriptionDto){ 
-        return await prisma.channelSubscribers.create({
+        return await this.prisma.channelSubscribers.create({
             data:{
                 channel: {
                     connect:{
@@ -130,9 +131,9 @@ export default {
                 }
             }
         })
-    },
+    }
     async deleteSubscription( { subscriberId, channelId }: UserDto.SubscriptionDto){
-        await prisma.channelSubscribers.delete ({
+        await this.prisma.channelSubscribers.delete ({
             where:{
                 channelId_subscriberId: {
                     channelId,
@@ -140,9 +141,9 @@ export default {
                 }
             },
         })
-    },
+    }
     async getSubscribers({ id, ...pagination }: UserDto.GetSubscribersListDto){
-        return await prisma.channelSubscribers.findMany({
+        return await this.prisma.channelSubscribers.findMany({
             where:{ channelId: id },
             select:{
                 subscriber: {
@@ -155,9 +156,9 @@ export default {
             },
             ...pagination
         })
-    },
+    }
     async getSubscriptions({ id, ...pagination }: UserDto.GetSubscribersListDto ){
-        return await prisma.channelSubscribers.findMany({
+        return await this.prisma.channelSubscribers.findMany({
             where:{ subscriberId: id },
             select:{
                 channel:{    
@@ -170,9 +171,9 @@ export default {
             },
             ...pagination
         })
-    },
+    }
     async checkSubscription({ channelId, subscriberId }:UserDto.SubscriptionDto){
-        return await prisma.user.count({
+        return await this.prisma.user.count({
             where: {
                 id: subscriberId,
                 subscriptions:{

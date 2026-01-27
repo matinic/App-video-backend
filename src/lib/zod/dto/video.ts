@@ -1,5 +1,4 @@
-import * as videoSchema from "./schema";
-import { UserDto } from "@/utils/validations/user/dto"
+import * as videoSchema from "../schemas/video";
 import {z} from "zod"
 
 export namespace VideoDto {

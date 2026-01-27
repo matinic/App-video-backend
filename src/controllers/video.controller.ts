@@ -1,18 +1,20 @@
 import { Request, Response } from "express";
-import videoService from "@/services/video.service";
+import VideoService from "@/services/video.service";
 import notificationService from "@/services/notification.service"
-import userService from "@/services/user.service";
+import UserService from "@/services/user.service";
+import NotificationService from "@/services/notification.service";
 
-export default {
+export default class VideoController {
+  constructor(private userService: UserService, private videoService: VideoService, private notificationService: NotificationService ){}
   async createVideo(req:Request, res:Response){
     try {
       const data = req.validatedBody
       const { id } = req.user
-      const createdVideo = await videoService.createVideo(data)
+      const createdVideo = await this.videoService.createVideo(data)
 
-      const subscribers = await userService.getSubscribers({ id })
+      const subscribers = await this.userService.getSubscribers({ id })
       const userDestinationIdList = subscribers.map( ( { subscriber })  => ({ userDestinationId: subscriber.id }))
-      await notificationService.createNewVideoNotification({
+      await this.notificationService.createNewVideoNotification({
         userEmmiterId: createdVideo.authorId,
         videoId: createdVideo.id,
         userDestinationIdList
@@ -26,11 +28,11 @@ export default {
         console.log(err.message)
       }
     }
-  },
+  }
   async getVideoById (req:Request, res:Response){
     try {
       const { id } = req.validatedParams
-      const foundVideo = await videoService.getVideoById({ id })
+      const foundVideo = await this.videoService.getVideoById({ id })
       if(!foundVideo){
         res.status(404).json({message: "Video not found"})
         return;
@@ -43,11 +45,11 @@ export default {
           console.log(err.message)
       }
     }
-  },
+  }
   async getVideosPublished(req:Request, res:Response){ 
     try { 
       const data = req.validatedQuery
-      const videos = await videoService.getVideosPublished(data);
+      const videos = await this.videoService.getVideosPublished(data);
       res.status(200).json({
         videos,
         cursor: req.validatedQuery.skip + 1,
@@ -61,11 +63,11 @@ export default {
         return 
       }
     }
-  },
+  }
   async getVideosBySearch(req:Request, res:Response){
     try {
       const data = req.validatedBody 
-      const videos = await videoService.getVideosBySearch(data);
+      const videos = await this.videoService.getVideosBySearch(data);
       res.status(200).json({
         videos,
         cursor: req.validatedBody.skip + 1
@@ -76,12 +78,12 @@ export default {
         console.log(error.message)
       }
     }
-  },
+  }
   async getChannelVideos(req:Request, res:Response){ 
     try {
       const { name } = req.validatedParams 
       const data = req.validatedBody 
-      const videos = await videoService.getChannelVideos({
+      const videos = await this.videoService.getChannelVideos({
         name,
         ...data
       })
@@ -96,12 +98,12 @@ export default {
         console.log(error.message)
       }
     }
-  },
+  }
   async getChannelUnpublishedVideos(req:Request, res:Response){
     try {
       const { name } = req.user
       const data = req.validatedBody 
-      const videos = await videoService.getChannelUnpublishedVideos({ 
+      const videos = await this.videoService.getChannelUnpublishedVideos({ 
         name,
         ...data
       })
@@ -116,11 +118,11 @@ export default {
         console.log(error.message)
       }
     }
-  },
+  }
   async deleteVideo(req:Request, res:Response){
     try {
       const { id } = req.validatedParams 
-      await videoService.deleteVideo( { id } )
+      await this.videoService.deleteVideo( { id } )
       res.status(200).json({ message: "Video Deleted" })
       return 
     } catch (err) {
@@ -130,11 +132,11 @@ export default {
         return;
       }
     }
-  },
+  }
   async updateVideo(req:Request,res:Response){
     try {
       const data = req.validatedBody 
-      const video = await videoService.updateVideo(data)
+      const video = await this.videoService.updateVideo(data)
       res.status(200).json(video)
       return 
     } catch (error) {
@@ -144,11 +146,11 @@ export default {
         return;
       }      
     }
-  },
+  }
   async updateLikeVideoStatus(req:Request, res:Response){
     try {
       const data = req.validatedParams
-      await videoService.upsertUserVideoLikeStatus(data)
+      await this.videoService.upsertUserVideoLikeStatus(data)
       res.status(200).json("Video likes status updated")
       return
     } catch (err) {
@@ -158,12 +160,12 @@ export default {
         return;
       }
     }
-  },
+  }
   async getUserVideoStatus(req:Request, res:Response){
     try {
       const { id } = req.user
       const { videoId } = req.validatedBody
-      const status = await videoService.getUserVideoStatus({ userId: id, videoId})
+      const status = await this.videoService.getUserVideoStatus({ userId: id, videoId})
       if(!status) {
         res.status(400).json({ message: "Relation not found"})
         return
