@@ -1,9 +1,9 @@
-import notificationService from "@/src/services/notification.service";
+import NotificationService from "@/services/notification.service";
 
 //Notification related types 
 //Notification service
 
-export type NotificationDb = Awaited<ReturnType<typeof notificationService.getNotification>> ;
+export type NotificationDb = Awaited<ReturnType<InstanceType<typeof NotificationService>["getNotification"]>> ;
 
 export type NotificationInner = NotificationDb[number]["notification"]
 

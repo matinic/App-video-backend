@@ -1,10 +1,10 @@
-import {z, ZodTypeAny} from "zod"
+import { z, ZodType } from "zod"
 import { Request, Response, NextFunction } from "express"
 
 type Validate = {
-    body?: ZodTypeAny,
-    params?: ZodTypeAny,
-    query?: ZodTypeAny
+    body?: ZodType<any>,
+    params?: ZodType<any>,
+    query?: ZodType<any>
 }
 
 export default <T extends Validate>( { body, params, query }: T )=>{

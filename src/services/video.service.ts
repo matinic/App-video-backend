@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, PrismaPromise } from "@prisma/client";
 import { VideoDto } from "@/lib/zod/dto/video";
 import { BaseDto } from "@/lib/zod/dto/base"
 

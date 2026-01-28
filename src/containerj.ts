@@ -1,0 +1,78 @@
+import prisma from '@/lib/client';
+import UserService from '@/services/user.service';
+import UserController from '@/controllers/user.controller';
+import NotificationService from '@/services/notification.service';
+import NotificationController from '@/controllers/notification.controller';
+import VideoService from '@/services/video.service';
+import VideoController from '@/controllers/video.controller';
+import CommentService from '@/services/comment.service';
+import CommentController from '@/controllers/comment.controller';
+
+export class Container {
+  private static instances = new Map<string, any>();
+
+  static getPrisma() {
+    return prisma;
+  }
+
+  static getUserService(): UserService {
+    if (!this.instances.has('UserService')) {
+      this.instances.set('UserService', new UserService(this.getPrisma()));
+    }
+    return this.instances.get('UserService');
+  }
+
+  static getNotificationService(): NotificationService {
+    if (!this.instances.has('NotificationService')) {
+      this.instances.set('NotificationService', new NotificationService(this.getPrisma()));
+    }
+    return this.instances.get('NotificationService');
+  }
+
+  static getVideoService(): VideoService {
+    if (!this.instances.has('VideoService')) {
+      this.instances.set('VideoService', new VideoService(this.getPrisma()));
+    }
+    return this.instances.get('VideoService');
+  }
+
+  static getCommentService(): CommentService {
+    if (!this.instances.has('CommentService')) {
+      this.instances.set('CommentService', new CommentService(this.getPrisma()));
+    }
+    return this.instances.get('CommentService');
+  }
+
+
+  static getUserController(): UserController {
+    if (!this.instances.has('UserController')) {
+      this.instances.set('UserController', new UserController(this.getUserService(), this.getNotificationService()));
+    }
+    return this.instances.get('UserController');
+  }
+
+  static getNotificationController(): NotificationController {
+    if (!this.instances.has('NotificationController')) {
+      this.instances.set('NotificationController', new NotificationController(this.getNotificationService()));
+    }
+    return this.instances.get('NotificationController');
+  }
+
+  static getVideoController(): VideoController {
+    if (!this.instances.has('VideoController')) {
+      this.instances.set('VideoController', new VideoController(this.getUserService(), this.getVideoService(), this.getNotificationService()));
+    }
+    return this.instances.get('VideoController');
+  }
+
+  static getCommentController(): CommentController {
+    if (!this.instances.has('CommentController')) {
+      this.instances.set('CommentController', new CommentController(this.getCommentService()));
+    }
+    return this.instances.get('CommentController');
+  }
+
+  
+}
+
+export default Container;

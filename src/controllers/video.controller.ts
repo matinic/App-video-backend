@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import VideoService from "@/services/video.service";
-import notificationService from "@/services/notification.service"
 import UserService from "@/services/user.service";
 import NotificationService from "@/services/notification.service";
 

@@ -1,5 +1,5 @@
 // types/express.d.ts
-import { UserDto } from "@/utils/validations/user/dto"
+import { UserDto } from "./lib/dto/user"
 
 declare global {
   namespace Express {
