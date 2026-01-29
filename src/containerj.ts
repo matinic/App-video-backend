@@ -7,6 +7,8 @@ import VideoService from '@/services/video.service';
 import VideoController from '@/controllers/video.controller';
 import CommentService from '@/services/comment.service';
 import CommentController from '@/controllers/comment.controller';
+import MessageService from './services/message.service';
+import MessageController from './controllers/message.controller';
 
 export class Container {
   private static instances = new Map<string, any>();
@@ -70,6 +72,19 @@ export class Container {
       this.instances.set('CommentController', new CommentController(this.getCommentService()));
     }
     return this.instances.get('CommentController');
+  }
+    static getMessageService(): MessageService {
+    if (!this.instances.has('MessageService')) {
+      this.instances.set('MessageService', new MessageService(this.getPrisma()));
+    }
+    return this.instances.get('MessageService');
+  }
+
+  static getMessageController(): MessageController {
+    if (!this.instances.has('MessageController')) {
+      this.instances.set('MessageController', new MessageController(this.getMessageService()));
+    }
+    return this.instances.get('MessageController');
   }
 
   
