@@ -41,7 +41,7 @@ describe('UserService', () => {
   });
 
   describe('checkUserName', () => {
-    it('should return user if name exists', async () => {
+    it('should return 1 if name exists', async () => {
       prismaMock.user.findFirst.mockResolvedValue(mockUser);
 
       const result = await userService.checkUserName({ name: mockUser.name });

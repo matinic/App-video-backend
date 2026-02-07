@@ -6,6 +6,8 @@ export const mockComment = {
   userId: '123',
   videoId: 'video-123',
   fatherCommentId: null,
+  deleted: false,
+  deletedAt: null,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
 };
@@ -20,6 +22,8 @@ export const mockComments = [
     userId: '456',
     videoId: 'video-123',
     fatherCommentId: 'comment-123',
+    deleted: false,
+    deletedAt: null,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   },

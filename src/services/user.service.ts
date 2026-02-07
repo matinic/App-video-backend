@@ -32,14 +32,14 @@ export default class UserService {
         }) 
     }
     async checkUserEmail( { email }: BaseDto.EmailDto ){
-        return await this.prisma.user.count({
+        return await this.prisma.user.findFirst({
             where:{
                 email
             }
         })
     }
     async checkUserName ( { name }: BaseDto.NameDto ){
-        return await this.prisma.user.count({
+        return await this.prisma.user.findFirst({
             where: {
                 name,
             }

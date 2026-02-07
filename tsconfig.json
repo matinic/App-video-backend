@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "rootDir": "./src",
+    "rootDir": ".",
     "target": "ES2023",
     "strict": true,
     "esModuleInterop": true,
@@ -14,12 +14,11 @@
     "ignoreDeprecations": "5.0"
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "test",
-    "utils"
+    "dist"
   ]
 }

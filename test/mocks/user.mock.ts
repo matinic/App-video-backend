@@ -5,6 +5,8 @@ export const mockUser = {
   password: 'hashedPassword123',
   image: 'https://example.com/avatar.jpg',
   refreshToken: 'refreshToken123',
+  deleted: false,
+  deletedAt: null,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
 };
@@ -18,6 +20,8 @@ export const mockUsers = [
     password: 'hashedPassword456',
     image: 'https://example.com/avatar2.jpg',
     refreshToken: 'refreshToken456',
+    deleted: false,
+    deletedAt: null,
     createdAt: new Date('2024-01-02'),
     updatedAt: new Date('2024-01-02'),
   },

@@ -32,7 +32,7 @@ process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db';
  *   '^@test/(.*)$': '<rootDir>/test/$1'
  * },
  * testMatch: [
- *   '<rootDir>/test/unit/**/*.test.ts',
- *   '<rootDir>/test/integration/**/*.test.ts'
- * ]
- */
+ *   '<rootDir>/test/unit/**///*.test.ts',
+ //*   '<rootDir>/test/integration/**/*.test.ts'
+ //* ]
+ //*/

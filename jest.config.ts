@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   
   // Root directory
-  roots: ['<rootDir>/src', '<rootDir>/test'],
+  roots: ['<rootDir>', '<rootDir>/test'],
   
   // Test match patterns
   testMatch: [

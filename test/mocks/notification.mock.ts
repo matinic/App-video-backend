@@ -1,12 +1,14 @@
-export const mockNotification = {
-  id: 'notif-123',
-  userEmmiterId: '123',
-  videoId: 'video-123',
-  commentId: null,
+import { Notification } from "@prisma/client";
+
+export const mockNotification: Notification = {
+  id: "123456",
+  commentId: "comment-id", 
+  userEmmiterId: "user-emmiter-id",
+  videoId: null,
   messageId: null,
-  notificationTypeId: 'NEW-VIDEO',
-  createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-01'),
+  notificationTypeType: "NEW-COMMENT",
+  createdAt: new Date("2026-01-01"),
+  updatedAt: new Date("2026-01-01"),
 };
 
 export const mockNotifications = [
