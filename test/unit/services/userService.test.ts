@@ -77,8 +77,8 @@ describe('UserService', () => {
   });
 
   describe('deleteUserById', () => {
-    it('should delete user by id', async () => {
-      prismaMock.user.delete.mockResolvedValue(mockUser);
+    it('should soft-delete user by id', async () => {
+      prismaMock.user.update.mockResolvedValue(mockUser);
 
       const result = await userService.deleteUserById({ id: mockUser.id });
 
@@ -86,7 +86,7 @@ describe('UserService', () => {
     });
 
     it('should throw error when user not found', async () => {
-      prismaMock.user.delete.mockRejectedValue(new Error('User not found'));
+      prismaMock.user.update.mockRejectedValue(new Error('User not found'));
 
       await expect(
         userService.deleteUserById({ id: 'invalid-id' })

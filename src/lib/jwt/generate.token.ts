@@ -1,8 +1,7 @@
-import * as jwt from "jsonwebtoken"
-import { UserDto } from '../zod/dto/user'
+import jwt, { JwtPayload } from "jsonwebtoken"
 import {access, refresh} from "./key"
 
-export const refreshToken = ( userData:UserDto.AuthUserDto )=>{
+export const refreshToken = ( userData: JwtPayload  )=>{
     const token = jwt.sign(
         userData,
         refresh,
@@ -10,7 +9,7 @@ export const refreshToken = ( userData:UserDto.AuthUserDto )=>{
     )
     return token
 }
-export const accessToken = ( userData:UserDto.AuthUserDto )=>{
+export const accessToken = ( userData: JwtPayload )=>{
     const token = jwt.sign(
         userData,
         access,

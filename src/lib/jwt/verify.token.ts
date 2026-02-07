@@ -1,30 +1,20 @@
-import jwt from "jsonwebtoken"
+import jwt, { JwtPayload } from "jsonwebtoken"
 import { access, refresh } from "./key"
 
-export default async (verify:{
-  token: string
-  option: "access" | "refresh"
-}): Promise<jwt.JwtPayload> => {
+const secretMap = {
+  access,
+  refresh,
+} as const;
+
+export default (verify: {
+  token: string;
+  option: keyof typeof secretMap;
+}): JwtPayload => {
   try {
-    if(verify.option ===  "access"){
-      const decoded = jwt.verify(verify.token, access);
-      if (typeof decoded === 'object') {
-       return decoded as jwt.JwtPayload;
-      } 
-    }
-    else if(verify.option ===  "refresh"){
-      const decoded = jwt.verify(verify.token, refresh);
-      if (typeof decoded === 'object') {
-        return decoded as jwt.JwtPayload;
-      }
-    }
-    return new Error("Invalid verify option")
+    return jwt.verify(verify.token, secretMap[verify.option]) as JwtPayload;
   } catch (error) {
-    if(error instanceof Error){
-      console.log(error)
-      return new Error(`Something wrong happend while verify token: ${error.message}`)
-    }
-    return new Error("Something wrong happend while verify token")
+    const message = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Token verification failed: ${message}`);
   }
 };
 

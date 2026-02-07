@@ -245,7 +245,7 @@ class UserController {
         return
       }
       const token = cookies.jwt
-      const decoded = await verifyToken({token,option:"refresh"}) as UserDto.AuthUserDto
+      const decoded = verifyToken({token,option:"refresh"});
       const newAccesstoken = accessToken( decoded )
       res.status(200).json({accessToken: newAccesstoken})
       return
