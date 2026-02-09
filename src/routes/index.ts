@@ -12,7 +12,7 @@ router.use("/user", user)
 router.use("/video", video)
 router.use("/notification", notification)
 router.use("/message", message)
-//router.use("/comment"), comment)
+router.use("/comment", comment)
 router.get("/refresh")
 
 export default router
