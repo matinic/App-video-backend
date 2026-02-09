@@ -1,23 +1,16 @@
 import { Request, Response } from "express";
 import CommentService from "@/services/comment.service"
+import { HttpError } from "@/lib/errors/http.error"
 
 class CommentController {
     constructor(private commentService: CommentService) {}
 
     async createComment(req:Request,res:Response){
-        try {
-            await this.commentService.createComment(req.validatedBody);
-            res.status(200).json({message: "Comment Created"})
-        } catch (error) {
-            if(error instanceof Error){
-                res.status(500).json({ message: "Server Error" })
-                console.log(error.message)
-            }
-        }
+        await this.commentService.createComment(req.validatedBody);
+        res.status(200).json({message: "Comment Created"})
     }
 
     async getCommentsFromVideo(req:Request,res:Response){
-      try{
         const { videoId } = req.validatedParams;
         const paginationAndOrder  = req.validatedQuery;
         const commentsFound  = await this.commentService.getCommentsFromVideo({
@@ -36,75 +29,46 @@ class CommentController {
             commentsFound,
             cursor
         })
-        return
-      }catch(error){
-        if(error instanceof Error){
-            res.status(500).json({ message: "Server Error" })
-            console.log(error.message)
-        }
-      }
     }
 
     async getCommentsFromUser(req:Request,res:Response){
-        try{
-            const userId = req.user.id;
-            const paginationAndOrder = req.validatedQuery;
-            const commentsFound = await this.commentService.getUserComments({
-                ...paginationAndOrder,
-                userId
-            })
-            const lastItem = commentsFound.at(-1);
-            let cursor;
-            if(lastItem){
-                cursor = {
-                    id: lastItem.id,
-                    createdAt: lastItem.createdAt
-                }
-                return
-            }
-            res.status(200).json({
-                commentsFound,
-                cursor
-            })
-        }catch(error){
-            if(error instanceof Error){
-                res.status(500).json({ message: "Server Error" })
-                console.log(error.message)
+        const userId = req.user.id;
+        const paginationAndOrder = req.validatedQuery;
+        const commentsFound = await this.commentService.getUserComments({
+            ...paginationAndOrder,
+            userId
+        })
+        const lastItem = commentsFound.at(-1);
+        let cursor;
+        if(lastItem){
+            cursor = {
+                id: lastItem.id,
+                createdAt: lastItem.createdAt
             }
         }
+        res.status(200).json({
+            commentsFound,
+            cursor
+        })
     }
 
     async updateCommentById(req:Request, res:Response){
-        try {
-            const updatedComment = await this.commentService.updateComment(req.validatedBody);
-            if(!updatedComment) res.status(404).json({message: "Comment not found"});
-            res.status(200).json({
-                message: "comment updated successfully"
-            })
-        } catch (error) {
-            if(error instanceof Error){
-                res.status(500).json({ message: "Server Error" })
-                console.log(error.message)
-            }
+        const updatedComment = await this.commentService.updateComment(req.validatedBody);
+        if(!updatedComment) {
+            throw new HttpError(404, "Comment not found");
         }
+        res.status(200).json({
+            message: "comment updated successfully"
+        })
     }
 
     async deleteComment(req:Request, res:Response){
-        try {
-            const { id } = req.validatedParams;
-            const deletedComment = await this.commentService.deleteComment(id);
-            if(!deletedComment){
-                res.status(404).json({message: "Comment not found"});
-                return
-            }
-            res.status(200).json({message: "Coment deleted successfully"})
-            return
-        } catch (error) {
-            if(error instanceof Error){
-                res.status(500).json({ message: "Server Error" })
-                console.log(error.message)
-            }
+        const { id } = req.validatedParams;
+        const deletedComment = await this.commentService.deleteComment(id);
+        if(!deletedComment){
+            throw new HttpError(404, "Comment not found");
         }
+        res.status(200).json({message: "Coment deleted successfully"})
     }
 }
 

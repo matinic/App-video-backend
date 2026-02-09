@@ -3,6 +3,8 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import morgan from "morgan"
 import cookieParser from "cookie-parser"
 import cors from "cors"
+import errorMiddleware from "@/lib/middlewares/error.middleware";
+import router from './routes';
 const app: Express = express();
 
 app.use(cors(
@@ -18,6 +20,7 @@ app.use(cors()); // Enable CORS
 app.use(morgan('dev')); // Logging
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use("/app",router)
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
@@ -30,9 +33,8 @@ app.use((req: Request, res: Response) => {
 });
 
 // Error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
+app.use(errorMiddleware);
+
+
 
 export default app;
