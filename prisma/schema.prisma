@@ -109,13 +109,14 @@ model Comment {
 }
 
 model Playlist {
-  id        String   @id @default(uuid())
-  name      String
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation("UserPlaylists", fields: [userId], references: [id])
-  videos    Video[]  @relation("PlaylistVideos")
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation("UserPlaylists", fields: [userId], references: [id])
+  videos      Video[]  @relation("PlaylistVideos")
 }
 
 model Notification {
@@ -157,8 +158,11 @@ model Message {
   senderId     String
   receiverId   String
   content      String
+  isRead       Boolean       @default(false)
+  isDeleted    Boolean       @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
   receiver     User          @relation("ReceiverMessages", fields: [receiverId], references: [id])
   sender       User          @relation("UserMessages", fields: [senderId], references: [id])
   notification Notification?

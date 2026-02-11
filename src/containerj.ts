@@ -9,6 +9,8 @@ import CommentService from '@/services/comment.service';
 import CommentController from '@/controllers/comment.controller';
 import MessageService from './services/message.service';
 import MessageController from './controllers/message.controller';
+import PlaylistService from '@/services/playlist.service';
+import PlaylistController from '@/controllers/playlist.controller';
 
 export class Container {
   private static instances = new Map<string, any>();
@@ -43,6 +45,13 @@ export class Container {
       this.instances.set('CommentService', new CommentService(this.getPrisma()));
     }
     return this.instances.get('CommentService');
+  }
+
+  static getPlaylistService(): PlaylistService {
+    if (!this.instances.has('PlaylistService')) {
+      this.instances.set('PlaylistService', new PlaylistService(this.getPrisma()));
+    }
+    return this.instances.get('PlaylistService');
   }
 
 
@@ -85,6 +94,13 @@ export class Container {
       this.instances.set('MessageController', new MessageController(this.getMessageService()));
     }
     return this.instances.get('MessageController');
+  }
+
+  static getPlaylistController(): PlaylistController {
+    if (!this.instances.has('PlaylistController')) {
+      this.instances.set('PlaylistController', new PlaylistController(this.getPlaylistService()));
+    }
+    return this.instances.get('PlaylistController');
   }
 
   

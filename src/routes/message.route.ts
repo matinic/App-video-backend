@@ -41,12 +41,27 @@ router.get(
     asyncHandler(messageController.getUserMessages.bind(messageController))
 )
 
+// GET - Get unread count
+router.get(
+    "/count/unread",
+    auth(),
+    asyncHandler(messageController.getUnreadCount.bind(messageController))
+)
+
 // PUT - Update a message
 router.put(
     "/update",
     auth(),
     validate({ body: messageSchema.updateMessageSchema }),
     asyncHandler(messageController.updateMessage.bind(messageController))
+)
+
+// PATCH - Mark message as read
+router.patch(
+    "/:messageId/read",
+    auth(),
+    validate({ params: baseSchema.idSchema }),
+    asyncHandler(messageController.markMessageAsRead.bind(messageController))
 )
 
 // DELETE - Delete a message

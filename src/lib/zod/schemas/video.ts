@@ -66,7 +66,6 @@ export const getVideosBySearch = z.object({
 
 export const updateVideoSchema = z.object({
     videoId: idSchema.shape.id,
-    userId: idSchema.shape.id,
     title: z.string().optional(),
     description: z.string().optional(),
     url: z.string().url().optional(),

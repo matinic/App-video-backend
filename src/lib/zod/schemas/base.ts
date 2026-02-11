@@ -19,6 +19,7 @@ export const passwordSchema = z.object({
 export const orderBySchema = z.enum(["asc","desc"])
 
 export const paginationSchema = z.object({
+    skip: z.number().optional(),
     take: z.coerce.number().positive().default(12).optional(),
     cursor: z.object({
         ...idSchema.shape,

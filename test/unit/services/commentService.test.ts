@@ -47,9 +47,9 @@ describe('CommentService', () => {
 
       const result = await commentService.getCommentsFromVideo({
         videoId: 'video-123',
-        skip: 0,
+        skip: 1,
         take: 10,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'desc', upvotes: "asc" },
       });
 
       expect(result).toEqual(comments);
@@ -61,9 +61,9 @@ describe('CommentService', () => {
 
       const result = await commentService.getCommentsFromVideo({
         videoId: 'video-123',
-        skip: 0,
+        skip: 1,
         take: 10,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'desc', upvotes: "asc" },
       });
 
       expect(result).toEqual([]);

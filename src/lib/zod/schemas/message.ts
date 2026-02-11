@@ -23,6 +23,10 @@ export const deleteMessageSchema = z.object({
     id: idSchema.shape.id,
 })
 
+export const markAsReadSchema = z.object({
+    messageId: idSchema.shape.id,
+})
+
 export const getConversationSchema = z.object({
     userId: idSchema.shape.id,
     contactId: idSchema.shape.id,

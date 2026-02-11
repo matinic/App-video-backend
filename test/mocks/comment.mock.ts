@@ -3,13 +3,15 @@ export const mockComment = {
   content: 'Great video!',
   upvotes: 5,
   downvotes: 1,
-  userId: '123',
+  userId: 'user-123',
   videoId: 'video-123',
-  fatherCommentId: null,
-  deleted: false,
-  deletedAt: null,
+  commentId: null,
+  isDeleted: false,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
+  _count: {
+    response: 0
+  }
 };
 
 export const mockComments = [
@@ -19,13 +21,15 @@ export const mockComments = [
     content: 'Thanks for sharing!',
     upvotes: 10,
     downvotes: 0,
-    userId: '456',
+    userId: 'user-456',
     videoId: 'video-123',
-    fatherCommentId: 'comment-123',
-    deleted: false,
-    deletedAt: null,
+    commentId: 'comment-123',
+    isDeleted: false,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
+    _count: {
+      response: 0
+    }
   },
 ];
 

@@ -26,10 +26,11 @@ class MessageController {
     }
 
     async updateMessage(req: Request, res: Response) {
-        const message = await this.messageService.updateMessage(req.validatedBody)
-        if (!message) {
-            throw new HttpError(404, "Message not found");
-        }
+        const { id } = req.user
+        const message = await this.messageService.updateMessage({
+            ...req.validatedBody,
+            userId: id
+        })
         res.status(200).json({
             message: "Message updated successfully",
             data: message
@@ -37,11 +38,12 @@ class MessageController {
     }
 
     async deleteMessage(req: Request, res: Response) {
-        const message = await this.messageService.deleteMessage(req.validatedParams)
-        if (!message) {
-            throw new HttpError(404, "Message not found");
-        }
-        res.status(200).json({ message: "Message deleted successfully" })
+        const { id } = req.user
+        const message = await this.messageService.deleteMessage({
+            ...req.validatedParams,
+            userId: id
+        })
+        res.status(200).json({ message: "Message deleted successfully", data: message })
     }
 
     async getConversation(req: Request, res: Response) {
@@ -85,6 +87,27 @@ class MessageController {
             message: "Messages retrieved successfully",
             data: messages,
             cursor
+        })
+    }
+
+    async markMessageAsRead(req: Request, res: Response) {
+        const { id } = req.user
+        const { messageId } = req.validatedParams
+        const message = await this.messageService.markAsRead({
+            id: messageId,
+            userId: id
+        })
+        res.status(200).json({
+            message: "Message marked as read",
+            data: message
+        })
+    }
+
+    async getUnreadCount(req: Request, res: Response) {
+        const { id } = req.user
+        const count = await this.messageService.getUnreadCount(id)
+        res.status(200).json({
+            unreadCount: count
         })
     }
 }

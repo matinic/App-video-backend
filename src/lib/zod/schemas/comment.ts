@@ -3,7 +3,7 @@ import { idSchema, orderBySchema, paginationSchema } from "./base"
 
 export const orderByCommentSchema = z.object({
     orderBy: z.object({
-        createAt: orderBySchema.optional(),
+        createdAt: orderBySchema.optional(),
         upvotes: orderBySchema.default("desc")
     })
 })
