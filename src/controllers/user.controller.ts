@@ -12,7 +12,7 @@ import process from "process"
 import NotificationService from "@/services/notification.service"
 
 class UserController {
-    constructor(private userService: UserService, private notificationService: NotificationService) {}
+  constructor(private userService: UserService, private notificationService: NotificationService) {}
   async createUser(req:Request, res:Response){
     const { name, email, password } = req.validatedBody
     const userByName = await this.userService.checkUserName( { name } )

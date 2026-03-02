@@ -21,6 +21,9 @@ export default class NotificationService {
             },
         })
     }
+    async createNotification({type, message}:{ type: "video" | "user" | "comment" | "message", message: string }){
+
+    }
     async createNewVideoNotification({ userEmmiterId, videoId, userDestinationIdList }: NotificationDto.CreateNewVideoNotificationDto){
         return await this.prisma.notification.create({
             data:{

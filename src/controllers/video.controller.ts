@@ -20,7 +20,7 @@ export default class VideoController {
       userDestinationIdList
     })
 
-    res.status(201).json({message:"video created successfully"}).redirect(`/video/${createdVideo.id}`);
+    res.status(201).json({message:"video created successfully"});
   }
   
   async getVideoById (req:Request, res:Response){

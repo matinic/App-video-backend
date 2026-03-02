@@ -2,11 +2,15 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "rootDir": ".",
-    "target": "ES2023",
+    "target": "esnext",
     "strict": true,
     "esModuleInterop": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "paths": {
       "@/*": ["src/*"],
       "@test/*": ["test/*"]
