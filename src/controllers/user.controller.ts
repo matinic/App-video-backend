@@ -5,14 +5,13 @@ import UserService from "@/services/user.service";
 import { HttpError } from "@/lib/errors/http.error";
 import verifyToken from "@/lib/jwt/verify.token"
 import { refreshToken, accessToken } from "@/lib/jwt/generate.token"
-import { UserDto } from "@/lib/zod/dto/user"
 import { comparePassword, encryptPassword } from "@/lib/bcrypt"
 import { v2 } from "cloudinary"
 import process from "process"
-import NotificationService from "@/services/notification.service"
+import { NotificationEmitter as emiter } from '@/lib/notification/notification.emitter';
 
 class UserController {
-  constructor(private userService: UserService, private notificationService: NotificationService) {}
+  constructor(private userService: UserService) {}
   async createUser(req:Request, res:Response){
     const { name, email, password } = req.validatedBody
     const userByName = await this.userService.checkUserName( { name } )
@@ -27,7 +26,13 @@ class UserController {
     const newUser = await this.userService.createUser({
       ...req.validatedBody,
       password: encryptedPassword
-    });  
+    });
+    emiter.emit("userCreated",{
+      userEmail: newUser.email,
+      userImageUrl: newUser.image,
+      userId: newUser.id,
+      userName: newUser.name
+    })
     res.status(201).json({
       message:"user created successfully",
       userId: newUser.id
@@ -101,10 +106,7 @@ class UserController {
     })
     if(!status){
       await this.userService.createSubscription(req.validatedBody)
-      await this.notificationService.createNewSubscriptionNotification({
-        userEmmiterId: data.id,
-        userDestinationId: id
-      })
+  //Add notification event
       res.status(200).json({message: "Subcription added" });
       return 
     }

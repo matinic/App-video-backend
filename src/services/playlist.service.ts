@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client"
-import { PlaylistDto } from "@/lib/zod/dto/playlist"
-import { BaseDto } from "@/lib/zod/dto/base"
+import { PlaylistDto } from "@/lib/zod.schemas/playlist.schema"
+import { BaseDto } from "@/lib/zod.schemas/base.schema"
 import { HttpError } from "@/lib/errors/http.error"
+import { UserDto } from "@/lib/zod.schemas/user.schema"
 
 export default class PlaylistService {
     constructor(private prisma: PrismaClient) {}
@@ -32,7 +33,7 @@ export default class PlaylistService {
         })
     }
 
-    async getPlaylistById({ id }: BaseDto.IdDto) {
+    async getPlaylistById( id : BaseDto.idDto ) {
         const playlist = await this.prisma.playlist.findUnique({
             where: { id },
             include: {
@@ -93,19 +94,8 @@ export default class PlaylistService {
     }
 
     async updatePlaylist(
-        { id, name, description }: PlaylistDto.UpdatePlaylistDto,
-        userId: string
+        { id, name, description }: PlaylistDto.UpdatePlaylistDto
     ) {
-        const playlist = await this.prisma.playlist.findUnique({ where: { id } })
-
-        if (!playlist) {
-            throw new HttpError(404, "Playlist not found")
-        }
-
-        if (playlist.userId !== userId) {
-            throw new HttpError(403, "You can only edit your own playlists")
-        }
-
         return await this.prisma.playlist.update({
             where: { id },
             data: {
@@ -126,18 +116,8 @@ export default class PlaylistService {
         })
     }
 
-    async deletePlaylist({ id }: BaseDto.IdDto, userId: string) {
-        const playlist = await this.prisma.playlist.findUnique({ where: { id } })
-
-        if (!playlist) {
-            throw new HttpError(404, "Playlist not found")
-        }
-
-        if (playlist.userId !== userId) {
-            throw new HttpError(403, "You can only delete your own playlists")
-        }
-
-        return await this.prisma.playlist.delete({
+    async deletePlaylist( id: BaseDto.idDto, userId: UserDto.AuthUserDto ) {
+         return await this.prisma.playlist.delete({
             where: { id },
             select: {
                 id: true,

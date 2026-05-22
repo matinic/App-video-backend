@@ -11,10 +11,5 @@ export type Notification = {
     message: string,
     userEmmiter: NotificationInner["userEmmiter"]
     type: string
-    referenceData: {
-        video?: NotificationInner["video"]
-        comment?: NotificationInner["comment"]
-        user?: NotificationInner["userEmmiter"]
-        directMessage?: NotificationInner["message"]
-    }
+    referenceData: { }
 }

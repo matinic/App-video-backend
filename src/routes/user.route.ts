@@ -1,9 +1,9 @@
 import { Router } from "express"
-import Container from '@/containerj'
+import Container from '@/container'
 
 const userController = Container.getUserController()
-import * as userSchema from "@/lib/zod/schemas/user"
-import * as baseSchema from "@/lib/zod/schemas/base"
+import * as userSchema from "@/lib/zod/schema/user"
+import * as baseSchema from "@/lib/zod/schema/base"
 import auth from "@/lib/middlewares/auth.jwt"
 import validate from "@/lib/middlewares/validate"
 import { asyncHandler } from "@/lib/asyncHandler"

@@ -1,25 +1,19 @@
 import { Request, Response } from "express";
 import VideoService from "@/services/video.service";
-import UserService from "@/services/user.service";
-import NotificationService from "@/services/notification.service";
 import { HttpError } from "@/lib/errors/http.error";
+import { notificationEmitter, NotificationEmitter } from "@/lib/notification/notification.emitter";
+
+
 
 export default class VideoController {
-  constructor(private userService: UserService, private videoService: VideoService, private notificationService: NotificationService ){}
+  constructor( private videoService: VideoService, private notificationEmitter: NotificationEmitter ){}
   
   async createVideo(req:Request, res:Response){
     const data = req.validatedBody
-    const { id } = req.user
-    const createdVideo = await this.videoService.createVideo(data)
+    const video = await this.videoService.createVideo(data)
 
-    const subscribers = await this.userService.getSubscribers({ id })
-    const userDestinationIdList = subscribers.map( ( { subscriber })  => ({ userDestinationId: subscriber.id }))
-    await this.notificationService.createNewVideoNotification({
-      userEmmiterId: createdVideo.authorId,
-      videoId: createdVideo.id,
-      userDestinationIdList
-    })
-
+    this.notificationEmitter.emit("video.uploaded", video)
+  
     res.status(201).json({message:"video created successfully"});
   }
   

@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "Message" ADD COLUMN "isRead" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN "isDeleted" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN "deletedAt" TIMESTAMP(3);

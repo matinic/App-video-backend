@@ -1,9 +1,9 @@
 import { NextFunction, Router } from "express";
-import Container from '@/containerj'
+import Container from '@/container'
 
 const videoController = Container.getVideoController();
-import * as videoSchema from "@/lib/zod/schemas/video";
-import * as baseSchema from "@/lib/zod/schemas/base"
+import * as videoSchema from "@/lib/zod/schema/video";
+import * as baseSchema from "@/lib/zod/schema/base"
 import auth from "@/lib/middlewares/auth.jwt"
 import validate from "@/lib/middlewares/validate";
 import { asyncHandler } from "@/lib/asyncHandler";

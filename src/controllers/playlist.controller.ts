@@ -1,6 +1,5 @@
 import { Request, Response } from "express"
 import PlaylistService from "@/services/playlist.service"
-import { HttpError } from "@/lib/errors/http.error"
 
 export default class PlaylistController {
     constructor(private playlistService: PlaylistService) {}
@@ -33,11 +32,9 @@ export default class PlaylistController {
     }
 
     async updatePlaylist(req: Request, res: Response) {
-        const { id } = req.user
-        const playlist = await this.playlistService.updatePlaylist(
-            { ...req.validatedParams, ...req.validatedBody },
-            id
-        )
+        const playlist = await this.playlistService.updatePlaylist({ 
+             ...req.validatedBody,
+        })
         res.status(200).json({
             message: "Playlist updated successfully",
             data: playlist
