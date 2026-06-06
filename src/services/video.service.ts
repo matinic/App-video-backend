@@ -1,6 +1,6 @@
 import { PrismaClient, PrismaPromise } from "@prisma/client";
-import { VideoDto } from "@/lib/zod/dto/video";
-import { BaseDto } from "@/lib/zod/dto/base"
+import { VideoDto } from "@/lib/zod.schemas/video.schema";
+import { BaseDto } from "@/lib/zod.schemas/base.schema"
 
 export default class VideoService {
     constructor(private prisma:PrismaClient){}
@@ -17,11 +17,11 @@ export default class VideoService {
                         id: data.categoryId
                     }
                 },
-                tags: {
-                    connectOrCreate: data.tags?.map( tag => (
-                        {where: { name: tag.name },  create: { name: tag.name }}
-                    ))
-                },
+                // tags: {
+                //     connectOrCreate: data.tags?.map( tag => (
+                //         {where: { name: tag.name },  create: { name: tag.name }}
+                //     ))
+                // },
                 title: data.title,
                 url: data.title,
                 description: data.description,
@@ -30,8 +30,8 @@ export default class VideoService {
         })
     }
 
-    async getVideoById({ id }: BaseDto.IdDto){
-        return await this.prisma.video.findUnique({where: { id }})
+    async getVideoById( videoId: BaseDto.IdDto ){
+        return await this.prisma.video.findUnique({where: { id: videoId }})
     }
 
     async getVideosPublished( { orderBy, ...pagination }: VideoDto.PaginationAndOrderVideosDto ){

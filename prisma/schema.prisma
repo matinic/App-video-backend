@@ -17,7 +17,7 @@ model User {
   updatedAt         DateTime             @updatedAt
   refreshToken      String?              @unique
   deleted           Boolean              @default(false)
-  isNotificationActive Boolean
+  isNotificationActive Boolean            @default(true)
   following         UserOnFollow[]       @relation("followingUser")
   followers         UserOnFollow[]       @relation("followerUser")       
   playlists         Playlist[]           @relation("UserPlaylists")

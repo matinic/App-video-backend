@@ -3,61 +3,65 @@ import { nameSchema, emailSchema, passwordSchema, orderBySchema, paginationSchem
 import { DICTIONARY } from "@/lib/dictionay" 
 
 export const orderUsersBySchema = z.object({
-    [DICTIONARY.DATE.CREATED_AT]: orderBySchema.optional(),
-    [DICTIONARY.DATE.UPDATED_AT]: orderBySchema.optional(),
-    [DICTIONARY.USER.NAME]: orderBySchema.optional(),
+    createdAt: orderBySchema.optional(),
+    updatedAt: orderBySchema.optional(),
+    userName: orderBySchema.optional(),
 })
 
 export const checkUserSchema = z.object({
-    [DICTIONARY.USER.NAME]: nameSchema,
-    [DICTIONARY.USER.EMAIL]: emailSchema
+    userName: nameSchema,
+    userEmail: emailSchema
 })
 
-export const authUserSchema = z.object({
-    [DICTIONARY.USER.USER_ID]: idSchema,
-    [DICTIONARY.USER.NAME]: nameSchema
+export const userAuthSchema = z.object({
+    userId: idSchema,
+    userName: nameSchema
 })
 
 export const createUserSchema = z.object({
-    [DICTIONARY.USER.NAME]: nameSchema,
-    [DICTIONARY.USER.EMAIL]: emailSchema,
-    [DICTIONARY.USER.PASSWORD]: passwordSchema
+    userName: nameSchema,
+    userEmail: emailSchema,
+    userPassword: passwordSchema
 })
 
 export const getSessionSchema = z.object({
-    [DICTIONARY.USER.EMAIL]: z.string(),
-    [DICTIONARY.USER.PASSWORD]: passwordSchema,
+    userEmail: z.string(),
+    userPassword: passwordSchema,
 })
 
-export const getSubscribersListSchema = z.object({
-    ...paginationSchema,
-    [DICTIONARY.PAGINATION.CURSOR]: z.object({
-        channelId_subscriberId: z.object({
-            [DICTIONARY.USER.USER_ID]: z.string(),
-            [DICTIONARY.USER.SUBSCRIBER_ID]: z.string()
-        }),
-        createdAt: z.date()
-    }).optional(),
-    [DICTIONARY.USER.USER_ID]: idSchema,
+export const cursorSchema = z.object({
+    followerId_followingId: z.object({
+        followerId: z.uuid(),
+        followingId: z.uuid()
+    })
 })
+
+export const getFollowsSchema = z.object({
+    userId: idSchema,   
+    take: z.coerce.number(),
+    skip: z.coerce.number(),
+    cursor: cursorSchema
+})
+
+
 
 export const updateTokenSchema = z.object({
     refreshToken: z.string(),
-    [DICTIONARY.USER.USER_ID]: idSchema
+    userId: idSchema
 })
 
-export const subscriptionSchema = z.object({
-    [DICTIONARY.USER.USER_ID]: idSchema,
-    [DICTIONARY.USER.SUBSCRIPTION]: idSchema,
+export const followSchema = z.object({
+    userFollowingId: idSchema,
+    userFollowerId: idSchema,
 })
 
 export namespace UserDto {
     export type CreateUserDto = z.infer<typeof createUserSchema>
     export type GetSessionDto = z.infer<typeof getSessionSchema>
-    export type AuthUserDto = z.infer<typeof authUserSchema>
-    export type SubscriptionDto = z.infer<typeof subscriptionSchema>
+    export type UserAuthDto = z.infer<typeof userAuthSchema>
+    export type FollowDto = z.infer<typeof followSchema>
     export type UpdateTokenDto = z.infer<typeof updateTokenSchema>
-    export type GetSubscribersListDto = z.infer<typeof getSubscribersListSchema>
+    export type GetFollowsDto = z.infer<typeof getFollowsSchema>
     export type CheckUserDto = z.infer<typeof checkUserSchema>
     export type OrderUsersByDto = z.infer<typeof orderUsersBySchema>
 }  

@@ -1,8 +1,6 @@
 // src/notifications/notification.emitter.ts
 
 import { EventEmitter } from 'events';
-import { DICTIONARY } from '../dictionay';
-import { z } from "zod"
 
 // ─── Typed Event Map ──────────────────────────────────────────────────────────
 

@@ -30,7 +30,11 @@ export default class NotificationController {
     async deleteNotification(req:Request, res:Response){
 
     }
+    ///----SSE Service
 
+    async startSSEConection(req:Request, res:Response){
+        
+    }
     
 
 }

@@ -1,82 +1,81 @@
 import { orderBySchema, idSchema, paginationSchema, nameSchema } from "./base.schema"
 import { z } from "zod"
-import { DICTIONARY } from "@/lib/dictionay"
 
 export const tagSchema = z.array(z.object({name: z.string()})).optional()
 
 export const orderByVideosSchema = z.object({
-    [DICTIONARY.BASE.ORDERBY]: z.object({
-        [DICTIONARY.DATE.CREATED_AT]: orderBySchema.default("asc"),
-        [DICTIONARY.VIDEO.VIEWS]: orderBySchema.optional(),
-        [DICTIONARY.VIDEO.TITLE]: orderBySchema.optional(),
+    orderBy: z.object({
+        createdAt: orderBySchema.default("asc"),
+        views: orderBySchema.optional(),
+        title: orderBySchema.optional(),
     }).optional()
 })
 
 export const createVideoSchema = z.object({
-    [DICTIONARY.VIDEO.TITLE]: z.string(),
-    [DICTIONARY.BASE.URL]: z.string(),
-    [DICTIONARY.VIDEO.AUTHOR_ID]: idSchema,
-    [DICTIONARY.CATEGORY.CATEGORY_ID]: idSchema.optional(),
-    [DICTIONARY.VIDEO.DESCRIPTION]: z.string().max(4000),
-    [DICTIONARY.VIDEO.THUMBNAIL]: z.string().optional(),
-    [DICTIONARY.BASE.TAGS]: tagSchema
+    title: z.string(),
+    videoUrl: z.string(),
+    authorId: idSchema,
+    categoryId: idSchema.optional(),
+    description: z.string().max(4000),
+    thumbnail: z.string().optional(),
+    //tags: tagSchema
 })
 
 export const addFavouriteVideoSchema = z.object({
-    [DICTIONARY.VIDEO.VIDEO_ID]: idSchema,
-    [DICTIONARY.USER.USER_ID]: idSchema,
+    videoId: idSchema,
+    userId: idSchema,
 })
 
 export const paginationAndOrderVideosSchema = z.object({
-    ...paginationSchema,
-    ...orderByVideosSchema
+    ...paginationSchema.shape,
+    ...orderByVideosSchema.shape
 })
 
 export const getChannelVideosSchema = z.object({
-    [DICTIONARY.USER.NAME]: nameSchema,
-    ...orderByVideosSchema,
-    ...paginationSchema
+    userName: nameSchema,
+    ...orderByVideosSchema.shape,
+    ...paginationSchema.shape
 })
 
 export const filterParamsSchema = z.object({
-    [DICTIONARY.CATEGORY.CATEGORY_NAME]: z.string().min(1),
-    [DICTIONARY.VIDEO.RATING]: z.coerce.number().refine( val => {
+    categoryName: z.string().min(1),
+    rating: z.coerce.number().refine( val => {
         return  val <= 5 && val >= 0
     }),
-    [DICTIONARY.BASE.TAGS]: tagSchema
+    //tags: tagSchema
 })
 
 export const getVideosBySearch = z.object({
-    [DICTIONARY.BASE.KEYWORDS]: z.string().transform((val) => {
+    keywords: z.string().transform((val) => {
         return val
         .trim()
         .split(/\s+/) // separar por espacios, múltiple
         .filter(Boolean); // evitar strings vacíos
     }),
-    ...filterParamsSchema.shape,
-    ...orderByVideosSchema.shape,
+    ...filterParamsSchema,
+    ...orderByVideosSchema,
     ...paginationSchema,
 })
 
 export const updateVideoSchema = z.object({
-    [DICTIONARY.VIDEO.VIDEO_ID]: idSchema,
-    [DICTIONARY.VIDEO.VIDEO_TITLE]: z.string().optional(),
-    [DICTIONARY.VIDEO.DESCRIPTION]: z.string().optional(),
-    [DICTIONARY.BASE.URL]: z.string().optional(),
+    videoId: idSchema,
+    title: z.string().optional(),
+    description: z.string().optional(),
+    videoUrl: z.string().optional(),
 })
 
 export const getFavoriteVideosSchema = z.object({
-    ...paginationSchema,
-    [DICTIONARY.PAGINATION.CURSOR]: z.object({
+    ...paginationSchema.shape,
+    cursor: z.object({
         videoId_userId: z.object({
-            [DICTIONARY.USER.USER_ID]: idSchema,
-            [DICTIONARY.VIDEO.VIDEO_ID]: idSchema
+            userId: idSchema,
+            videoId: idSchema
         })
     }).optional()
 })
 
 export const videoIdSchema = z.object({
-    [DICTIONARY.VIDEO.VIDEO_ID]: idSchema,
+    videoId: idSchema,
 })
 
 export namespace VideoDto {

@@ -3,7 +3,9 @@ import { PrismaClient, User, UserOnNotification } from "@prisma/client"
 import { NotificationEmitter as emiter } from "@/lib/notification/notification.emitter"
 import { JsonObject } from "@prisma/client/runtime/client"
 import { BaseDto } from "@/lib/zod.schemas/base.schema"
-import { id } from "zod/v4/locales"
+
+
+const SSEResponses = new Map<string,Response>()
 
 export default class NotificationService {
     constructor(private prisma: PrismaClient ) {}
@@ -45,9 +47,15 @@ export default class NotificationService {
                 recipientsUserId:  followers.followers.map( follower => follower.followerId )
             })
         })
+        emiter.on("notificationError",({error,context})=>{
+            this.retrySendNotification({error,context})
+        })
         emiter.on("notificationsRead", ({notificationId,userId})=>{
             this.markNotificationsAsRead({notificationId, userId})
         })
+
+    }
+    async retrySendNotification({}){
 
     }
     async markNotificationsAsRead( { notificationId, userId }: NotificationDto.MarkNotificationsAsReadDto){
@@ -81,7 +89,7 @@ export default class NotificationService {
                 }
             })
             await tx.userOnNotification.createMany({
-                data: usersWithActiveNotifications.map( ({id}) => ({
+                data: usersWithActiveNotifications.map( ({id}) => ({    
                     notificationId,
                     recipientUserId: id
                 }))
@@ -123,27 +131,17 @@ export default class NotificationService {
         })
     }
     async getAllNotifications({ userId, ...pagination }: NotificationDto.GetAllNotificationsDto){
-        const notificationFound = await this.prisma.userNotification.findMany({
+        const notificationFound = await this.prisma.userOnNotification.findMany({
             where:{
-                userDestinationId: userId
+                recipientUserId: userId
             },
+            ...pagination
         })
         const metadataFound = notificationFound
     }
-    async updateNotification( { id }: BaseDto.IdDto ){
-        return await this.prisma.userNotification.updateMany({
-            where: {
-                userDestinationId: id,
-                read: false
-            },
-            data:{
-                read: true
-            }
-        })
-    }
     //---------------------------------------
-    async addNewSSEConnection(){
-
+    async addNewSSEConnection({ response, userId }: { response: Response, userId: string }){
+        SSEResponses.set(userId, response)
     }
     async deleteSSEConnection(){
 

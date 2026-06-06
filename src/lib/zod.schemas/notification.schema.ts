@@ -12,7 +12,7 @@ export const createNotificationSchema = z.object({
 })
 export const getAllNotificationsSchema = z.object({
     userId: idSchema,
-    ...paginationSchema,
+    
 })
 export const markNotificationsAsReadSchema = z.object({
     userId: idSchema, 
