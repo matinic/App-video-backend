@@ -107,7 +107,7 @@ class UserController {
     await this.userService.followChannel(req.validatedBody)
     res.status(200).json({message: "Subscription deleted"});
   }
-  async getSubscribers(req:Request, res:Response){
+  async getFollowes(req:Request, res:Response){
     const { id } = req.user
     const pagination = req.validatedBody
     const subscribers = await this.userService.getFollowers({
@@ -117,10 +117,10 @@ class UserController {
     res.status(200).json(subscribers);
   }
   async getChannelsFollowing(req:Request, res:Response){
-    const authUser = req.user as UserDto.UserAuthDto
-    const { id: userId,  } = req.validatedBody as UserDto.GetChannelsFollowingDto
-    const channelsFollowing = await this.userService.getChannelsFollowing({  })
-    res.status(200).json({ subcriptions });
+    // const user = req.user as UserDto.UserAuthDto
+    const { id: channelId, ...pagination } = req.validatedBody as UserDto.GetChannelsFollowingDto 
+    const following = await this.userService.getChannelsFollowing({  id: channelId, ...pagination })
+    res.status(200).json({ following });
   }
   async checkSubscription (req:Request, res:Response){
     const { id } = req.user

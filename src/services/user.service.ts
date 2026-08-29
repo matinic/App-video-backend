@@ -154,7 +154,7 @@ export default class UserService {
             },
         })
     }
-    async getFollowers({ id, ...pagination  }: UserDto.GetFollowersDto){
+    async getFollowers({ id, ...pagination  }: UserDto.GetChannelsFollowingDto){
         return await this.prisma.userOnFollow.findMany({
             where:{ 
                 channelId: id

@@ -57,9 +57,6 @@ export const getUserSessionSchema = z.object({
     password: z.string()
 })
 
-export const getFollowers = z.object({
-    id: 
-})
 
 export namespace UserDto {
     export type CreateUserDto = z.infer<typeof createUserSchema>
