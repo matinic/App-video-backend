@@ -18,9 +18,7 @@ export default class NotificationController {
     }
     
     async getNotifications(req:Request, res:Response){
-        const { id } = req.user;
-        const pagination = req.validatedQuery;
-        const notifications = await this.notificationService.getAllNotifications()
+
     }
 
     async updateBulkNotifications(req:Request, res:Response){

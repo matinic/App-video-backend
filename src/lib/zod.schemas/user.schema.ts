@@ -1,6 +1,5 @@
 import { z } from "zod"
 import { nameSchema, emailSchema, passwordSchema, orderBySchema, paginationSchema, idSchema } from "./base.schema"
-import { DICTIONARY } from "@/lib/dictionay" 
 
 export const orderUsersBySchema = z.object({
     createdAt: orderBySchema.optional(),
@@ -8,20 +7,20 @@ export const orderUsersBySchema = z.object({
     userName: orderBySchema.optional(),
 })
 
-export const checkUserSchema = z.object({
-    userName: nameSchema,
-    userEmail: emailSchema
+export const userAuthSchema = z.object({
+    id: idSchema,
+    name: z.string(),
 })
 
-export const userAuthSchema = z.object({
-    userId: idSchema,
-    userName: nameSchema
+export const getUserSchema = z.object({
+    name: z.string(),
+    auth: z.boolean().optional()
 })
 
 export const createUserSchema = z.object({
-    userName: nameSchema,
-    userEmail: emailSchema,
-    userPassword: passwordSchema
+    name: nameSchema,
+    email: emailSchema,
+    password: z.string()
 })
 
 export const getSessionSchema = z.object({
@@ -30,41 +29,50 @@ export const getSessionSchema = z.object({
 })
 
 export const cursorSchema = z.object({
-    followerId_followingId: z.object({
+    followerId_channelId: z.object({
         followerId: z.uuid(),
-        followingId: z.uuid()
+        channelId: z.uuid()
     })
 })
 
-export const getFollowsSchema = z.object({
-    userId: idSchema,   
-    take: z.coerce.number(),
-    skip: z.coerce.number(),
-    cursor: cursorSchema
+export const getChannelsFollowingSchema = z.object({
+    id: idSchema,   
+    take: z.coerce.number().optional(),
+    skip: z.coerce.number().optional(),
+    cursor: cursorSchema.optional()
 })
-
-
 
 export const updateTokenSchema = z.object({
     refreshToken: z.string(),
     userId: idSchema
 })
 
-export const followSchema = z.object({
-    userFollowingId: idSchema,
-    userFollowerId: idSchema,
+export const getFollowStatus = z.object({
+    followerId: idSchema,
+    channelId: idSchema,
+})
+
+export const getUserSessionSchema = z.object({
+    requiredData: z.string(),
+    password: z.string()
+})
+
+export const getFollowers = z.object({
+    id: 
 })
 
 export namespace UserDto {
     export type CreateUserDto = z.infer<typeof createUserSchema>
     export type GetSessionDto = z.infer<typeof getSessionSchema>
     export type UserAuthDto = z.infer<typeof userAuthSchema>
-    export type FollowDto = z.infer<typeof followSchema>
+    export type GetFollowStatusDto = z.infer<typeof getFollowStatus>
     export type UpdateTokenDto = z.infer<typeof updateTokenSchema>
-    export type GetFollowsDto = z.infer<typeof getFollowsSchema>
-    export type CheckUserDto = z.infer<typeof checkUserSchema>
+    export type GetChannelsFollowingDto = z.infer<typeof getChannelsFollowingSchema>
+    export type GetUserDto = z.infer<typeof getUserSchema>
     export type OrderUsersByDto = z.infer<typeof orderUsersBySchema>
+    export type GetUserSessionDto = z.infer<typeof getUserSessionSchema>
 }  
+
 
 
 

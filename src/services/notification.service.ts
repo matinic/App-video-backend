@@ -18,7 +18,7 @@ export default class NotificationService {
                 recipientsUserId: [ userId ],
                 notificationTitle: `Bienvenido ${ userName }, gracias por registrarse`,
             })
-        }) 
+}) 
         emiter.on("notificationCreated", ( args )=>{
             //this.sendNotification(args)
         })

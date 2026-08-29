@@ -11,14 +11,14 @@ model User {
   email             String               @unique
   name              String               @unique
   createdAt         DateTime             @default(now())
-  deletedAt         DateTime?
+  deletedAt         DateTime? 
   image             String?
   password          String
   updatedAt         DateTime             @updatedAt
   refreshToken      String?              @unique
   deleted           Boolean              @default(false)
   isNotificationActive Boolean            @default(true)
-  following         UserOnFollow[]       @relation("followingUser")
+  following         UserOnFollow[]       @relation("channel")
   followers         UserOnFollow[]       @relation("followerUser")       
   playlists         Playlist[]           @relation("UserPlaylists")
   notifications     UserOnNotification[]
@@ -28,11 +28,11 @@ model User {
 
 model UserOnFollow {
   followerId    String
-  followingId String
+  channelId String
   createdAt    DateTime @default(now())
-  followingUser      User     @relation("followingUser", fields: [followingId], references: [id])
+  channel      User     @relation("channel", fields: [channelId], references: [id])
   followerUser   User     @relation("followerUser", fields: [followerId], references: [id])
-  @@id([followerId, followingId])
+  @@id([followerId, channelId])
 }
 
 model UserVideoStatus {

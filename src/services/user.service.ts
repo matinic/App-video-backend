@@ -4,48 +4,55 @@ import { PrismaClient } from "@prisma/client"
 
 export default class UserService {
     constructor(private prisma: PrismaClient){}
-    async createUser( { userEmail, userName, userPassword }: UserDto.CreateUserDto){
+    async createUser( { email, name, password }: UserDto.CreateUserDto){
         return await this.prisma.user.create({ data: {
-            email: userEmail,
-            name: userName,
-            password: userPassword
+            email,
+            name,
+            password
         }});
     }
-    async deleteUserById( userId: BaseDto.IdDto){
-        return await this.prisma.user.update({
-            where: { id: userId },
-            data:{
-                deleted: true
-            }
-        })
-    }
-    async getUserByNameOrEmail( data: BaseDto.EmailDto | BaseDto.NameDto ){
+    async findSessionUser( requiredData: string ){
         return await this.prisma.user.findFirst({
             where: {
-                OR: [{ name: data }, { email: data }]
+                OR:[{
+                    name: requiredData,
+                },{
+                    email: requiredData
+                }]
             },
-            select: {
+            select:{
                 password: true,
-                id: true,
                 name: true,
+                id: true,
                 refreshToken: true,
                 image: true
             }
-        }) 
+        })
     }
-    async checkUserEmail( email: BaseDto.EmailDto ){
+    async getUser( user: UserDto.GetUserDto ){
+        if(user.auth){
+            return await this.prisma.user.findFirst({
+                where:{
+                    name: user.name,
+                },
+                select:{
+                    image: true,
+                    id: true,
+                    name: true,
+                    email: true
+                }
+            })
+        }
         return await this.prisma.user.findFirst({
             where:{
-                email
-            }
+                name: user.name
+            },
+            select:{
+                image: true,
+                name: true,
+            },
         })
-    }
-    async checkUserName ( name: BaseDto.NameDto ){
-        return await this.prisma.user.findFirst({
-            where: {
-                name,
-            }
-        })
+
     }
     async getChannelInfo( name: BaseDto.NameDto ){
         return await this.prisma.user.findUnique({
@@ -68,11 +75,11 @@ export default class UserService {
             }
         })
     }
-    async getAuthUserInfo( { userId, userName }: UserDto.UserAuthDto ){
+    async getAuthUserInfo( { id, name }: UserDto.UserAuthDto ){
         return await this.prisma.user.findUnique({
             where: {
-                id: userId,
-                name: userName
+                id,
+                name
             },
             select: {
                 id: true,
@@ -103,9 +110,9 @@ export default class UserService {
                     }
                 },
                 _count:{
+                    subscriptions: true,                       
                     select: {
                         subscribers: true,
-                        subscriptions: true,                       
                         videos: true,
                         messagesReceive: true,
                         notifications: true,
@@ -121,36 +128,36 @@ export default class UserService {
             data: { refreshToken }   
         })
     }
-    async createSubscription({ userFollowerId, userFollowingId }: UserDto.FollowDto ){ 
+    async followChannel({ channelId, followerId }: UserDto.GetFollowStatusDto ){ 
         return await this.prisma.userOnFollow.create({
             data:{
                 followerUser: {
                     connect:{
-                      id: userFollowerId
+                      id: followerId
                     }
                 },
-                followingUser: {
+                channel: {
                     connect: {
-                        id: userFollowingId
+                        id: channelId
                     }
                 }
             }
         })
     }
-    async unfollowUser( { userFollowingId, userFollowerId }: UserDto.FollowDto){
-        await this.prisma.userOnFollow.delete ({
+    async unfollowChannel( { channelId, followerId }: UserDto.GetFollowStatusDto){
+        return await this.prisma.userOnFollow.delete ({
             where:{
-                followerId_followingId:{
-                    followerId: userFollowerId,
-                    followingId: userFollowingId
+                followerId_channelId:{
+                    followerId,
+                    channelId
                 }
             },
         })
     }
-    async getFollowers({ userId, ...pagination  }: UserDto.GetFollowsDto){
+    async getFollowers({ id, ...pagination  }: UserDto.GetFollowersDto){
         return await this.prisma.userOnFollow.findMany({
             where:{ 
-                followingId: userId 
+                channelId: id
             },
             select:{
                 followerUser: {
@@ -164,11 +171,11 @@ export default class UserService {
             ...pagination
         })
     }
-    async getFollowings({ userId, ...pagination }: UserDto.GetFollowsDto ){
+    async getChannelsFollowing({ id, ...pagination }: UserDto.GetChannelsFollowingDto ){
         return await this.prisma.userOnFollow.findMany({
-            where:{ followerId: userId },
+            where:{ followerId: id },
             select:{
-                followingUser: {    
+                channel: {    
                     select: {
                         name: true,
                         image: true,
@@ -179,13 +186,27 @@ export default class UserService {
             ...pagination
         })
     }
-    async checkSubscription({ userFollowerId, userFollowingId }: UserDto.FollowDto){
+    async getFollowStatus({ followerId, channelId }: UserDto.GetFollowStatusDto){
         return await this.prisma.userOnFollow.findFirst({
             where: {
-                followerId: userFollowerId,
-                followingId: userFollowingId
+               channelId,
+               followerId
             },
         })
+    }
+    async deleteUser( id: BaseDto.IdDto ){
+        const userSoftDeleted = await this.prisma.user.update({
+            where:{
+                id
+            },
+            data:{
+                deleted: true
+            }
+        })
+        if(!userSoftDeleted.deleted){
+            return null
+        }
+        return 1
     }
 } 
 

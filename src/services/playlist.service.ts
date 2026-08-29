@@ -116,7 +116,7 @@ export default class PlaylistService {
         })
     }
 
-    async deletePlaylist( id: BaseDto.idDto, userId: UserDto.AuthUserDto ) {
+    async deletePlaylist(  UserDto.AuthUserDto ) {
          return await this.prisma.playlist.delete({
             where: { id },
             select: {
