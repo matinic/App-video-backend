@@ -107,7 +107,7 @@ class UserController {
     await this.userService.followChannel(req.validatedBody)
     res.status(200).json({message: "Subscription deleted"});
   }
-  async getFollowes(req:Request, res:Response){
+  async getFollowers(req:Request, res:Response){
     const { id } = req.user
     const pagination = req.validatedBody
     const subscribers = await this.userService.getFollowers({
@@ -122,17 +122,17 @@ class UserController {
     const following = await this.userService.getChannelsFollowing({  id: channelId, ...pagination })
     res.status(200).json({ following });
   }
-  async checkSubscription (req:Request, res:Response){
+  async checkFollowing (req:Request, res:Response){
     const { id } = req.user
-    const { channelId } = req.validatedParams
-    const isSubscribed = await this.userService.checkSubscription({
-      subscriberId: id,
+    const { id: channelId } = req.validatedParams 
+    const isSubscribed = await this.userService.getFollowStatus({
+      followerId: id,
       channelId
     })
-    res.status(200).json({
-      channelId,
-      isSubscribed
-    });
+    if(isSubscribed){
+      res.status(200).json({ isSubscribed: false })
+    }
+    res.status(200).json({ isSubscribed });
   }
   async getCloudinarySignature(req:Request, res:Response){
     let body = req.validatedBody
