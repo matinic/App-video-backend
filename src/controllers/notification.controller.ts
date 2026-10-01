@@ -7,7 +7,7 @@ export default class NotificationController {
     constructor(private notificationService: NotificationService){}
    
     async getNotification(req:Request, res:Response): Promise<void>{
-        const { userId } = req.user;
+        const { id: userId } = req.user;
         const { id } = req.validatedParams;
         const notification = await this.notificationService.getNotification({ notificationId: id, userId });
         if(!notification){
@@ -18,11 +18,23 @@ export default class NotificationController {
     }
     
     async getNotifications(req:Request, res:Response){
-
+        const { id: userId } = req.user;
+        const pagination = req.validatedQuery ?? {};
+        const notifications = await this.notificationService.getAllNotifications({
+            userId,
+            ...pagination,
+        });
+        res.status(200).json({ notifications });
     }
 
     async updateBulkNotifications(req:Request, res:Response){
-
+        const { id: userId } = req.user;
+        const { notificationId } = req.validatedBody;
+        const result = await this.notificationService.markNotificationsAsRead({
+            notificationId,
+            userId,
+        });
+        res.status(200).json({ updatedCount: result.count });
     }
     
     async deleteNotification(req:Request, res:Response){

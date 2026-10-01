@@ -12,11 +12,14 @@ export const createNotificationSchema = z.object({
 })
 export const getAllNotificationsSchema = z.object({
     userId: idSchema,
-    
+    ...paginationSchema.shape,
 })
 export const markNotificationsAsReadSchema = z.object({
     userId: idSchema, 
     notificationId:z.array(idSchema)
+})
+export const markNotificationsAsReadRequestSchema = z.object({
+    notificationId: z.array(idSchema).min(1),
 })
 
 export const sendNotificationsSchema = z.object({

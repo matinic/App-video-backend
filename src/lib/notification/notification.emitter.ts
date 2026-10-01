@@ -2,7 +2,7 @@
 
 import { EventEmitter } from 'events';
 
-// ─── Typed Event Map ──────────────────────────────────────────────────────────
+
 
 export interface NotificationEvents {
   userCreated:  {
@@ -14,7 +14,7 @@ export interface NotificationEvents {
   videoUploaded: {
     videoId: string,
     videoTitle: string,
-    videoThumbnail: string,
+    videoThumbnail: string | null,
     authorUserId: string,
     authorUserName: string
   };
@@ -27,7 +27,7 @@ export interface NotificationEvents {
   // 'custom':         import('./notification.schema').CreateNotificationDto;
   // Internal lifecycle events
   notificationCreated: {
-    recipientUserId: string[],
+    recipientsUserId: string[],
     notificationId: string,
     notificationTitle: string,
     notificationMetadata?: unknown
@@ -41,8 +41,6 @@ export interface NotificationEvents {
     context?: unknown
   };
 }
-
-// ─── Typed Emitter ────────────────────────────────────────────────────────────
 
 class TypedNotificationEmitter extends EventEmitter {
   emit<K extends keyof NotificationEvents>(
