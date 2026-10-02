@@ -10,20 +10,29 @@ type Validate = {
 export default <T extends Validate>( { body, params, query }: T )=>{
     return (req:Request, res:Response, next:NextFunction) => {
         if(body){
-            const { data, success, error } = body.safeParse(req.body)
-            if(!success) res.status(404).json(error.format)
-            req.validatedBody = data
+            const result = body.safeParse(req.body)
+            if(!result.success) {
+                res.status(400).json({ message: "Validation failed", issues: result.error.issues })
+                return
+            }
+            req.validatedBody = result.data
         }
         if(params){
-            const { data, success, error } = params.safeParse(req.params)
-            if(!success) res.status(404).json(error.format)
-            req.validatedParams = data
+            const result = params.safeParse(req.params)
+            if(!result.success) {
+                res.status(400).json({ message: "Validation failed", issues: result.error.issues })
+                return
+            }
+            req.validatedParams = result.data
         }
         if(query){
-            const {data, success, error } = query.safeParse(req.query)
-            if(!success) res.status(404).json(error.format)
-            req.validatedQuery = data
-        }                                     
+            const result = query.safeParse(req.query)
+            if(!result.success) {
+                res.status(400).json({ message: "Validation failed", issues: result.error.issues })
+                return
+            }
+            req.validatedQuery = result.data
+        }
         next()
         return
     }

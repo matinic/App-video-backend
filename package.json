@@ -8,24 +8,34 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon",
-    "test": "node --import tsx --test test/app.test.ts"
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
+    "test:unit": "npm test -- --testPathPattern=test/unit",
+    "test:integration": "npm test -- --testPathPattern=test/integration",
+    "test:e2e": "npm test -- --testPathPattern=test/e2e"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^25.6.0",
     "@types/pg": "^8.16.0",
+    "@types/supertest": "^6.0.3",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.11",
     "prisma": "^7.9.1",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.5",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.9.1",
+    "bcrypt": "^6.0.0",
     "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
