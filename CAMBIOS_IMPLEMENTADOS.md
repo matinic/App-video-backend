@@ -39,15 +39,21 @@ Registro cronológico de los cambios implementados en el proyecto.
 - Se conectó Prisma 7 con `PrismaPg` y se carga `DATABASE_URL` desde `.env` antes de crear el cliente. Si falta la variable, el cliente ahora falla con un mensaje explícito.
 - Se actualizó `tsconfig.json` para eliminar una opción `ignoreDeprecations` incompatible con TypeScript 5.9 y usar resolución `bundler` con destinos relativos de alias.
 - Se corrigieron imports y tipos obsoletos de autenticación/notificaciones y referencias a relaciones que no existen en el esquema Prisma. Se eliminó de `src/routes/index.ts` el endpoint `/refresh` sin handler, que impedía cargar las rutas en Express 5.
-- Se añadió el comando `npm test` con el runner nativo de Node y `tsx`, junto con un smoke test HTTP para `GET /health`. El test verifica estado HTTP `200`, `status: "OK"` y un timestamp válido; no requiere conectarse a PostgreSQL.
+- Se configuró Jest 29 con `ts-jest` para TypeScript ESM y Supertest para solicitudes HTTP. Se añadieron comandos `npm test`, `npm run test:unit`, `npm run test:integration` y `npm run test:e2e`.
+- Se añadieron pruebas unitarias de `VideoService.updateUserVideoStatus` para creación, eliminación al repetir la selección y actualización del estado.
+- Se añadieron pruebas de integración del middleware de validación y `VideoController`, incluyendo el ID válido y el rechazo de IDs inválidos.
+- Se añadieron pruebas end-to-end de `GET /health` y de respuestas 404 usando la aplicación Express real, sin conexión a PostgreSQL.
+- La prueba de integración detectó que el middleware respondía `404` y continuaba la ejecución con datos indefinidos. Se corrigió para responder `400` y detener la cadena de middleware ante un payload inválido.
 - Se declararon `bcrypt` y `@types/bcrypt` en `package.json` y se sincronizó `package-lock.json` para las dependencias de autenticación ya utilizadas por la aplicación.
 
 ### Estado de validación
 
 - `npx tsc --noEmit`: pasó.
-- `npm test`: pasó, 1 prueba y 0 fallos.
+- `npm test`: pasó, 3 suites, 7 pruebas y 0 fallos.
+- Las suites selectivas `test:unit`, `test:integration` y `test:e2e` pasaron individualmente.
 - `git diff --check` sobre los archivos actualizados: pasó.
 - Arranque del servidor: alcanzó escucha en el puerto `3003`; `GET /health` respondió `HTTP 200`.
+- La instalación de Jest reportó 8 vulnerabilidades en el árbol de dependencias (2 moderadas y 6 altas); no se ejecutó `npm audit fix`.
 
 ### Alcance del registro
 
