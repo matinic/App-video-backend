@@ -5,11 +5,6 @@ import NotificationService from "@/services/notification.service";
 
 export type NotificationDb = Awaited<ReturnType<InstanceType<typeof NotificationService>["getNotification"]>> ;
 
-export type NotificationInner = NotificationDb[number]["notification"]
+export type NotificationInner = NonNullable<NotificationDb>
 
-export type Notification = {
-    message: string,
-    userEmmiter: NotificationInner["userEmmiter"]
-    type: string
-    referenceData: { }
-}
+export type Notification = NotificationInner

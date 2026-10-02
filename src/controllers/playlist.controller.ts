@@ -14,7 +14,8 @@ export default class PlaylistController {
     }
 
     async getPlaylistById(req: Request, res: Response) {
-        const playlist = await this.playlistService.getPlaylistById(req.validatedParams)
+        const { id } = req.validatedParams
+        const playlist = await this.playlistService.getPlaylistById(id)
         res.status(200).json({
             message: "Playlist fetched successfully",
             data: playlist
@@ -32,8 +33,10 @@ export default class PlaylistController {
     }
 
     async updatePlaylist(req: Request, res: Response) {
+        const { id } = req.validatedParams
         const playlist = await this.playlistService.updatePlaylist({ 
-             ...req.validatedBody,
+            ...req.validatedBody,
+            id,
         })
         res.status(200).json({
             message: "Playlist updated successfully",
@@ -43,7 +46,8 @@ export default class PlaylistController {
 
     async deletePlaylist(req: Request, res: Response) {
         const { id } = req.user
-        const playlist = await this.playlistService.deletePlaylist(req.validatedParams, id)
+        const { id: playlistId } = req.validatedParams
+        const playlist = await this.playlistService.deletePlaylist(playlistId, id)
         res.status(200).json({
             message: "Playlist deleted successfully",
             data: playlist

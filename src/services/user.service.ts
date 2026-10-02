@@ -63,7 +63,7 @@ export default class UserService {
                 image: true,
                 _count:{
                     select: {
-                        subscribers: true,
+                        following: true,
                         videos: {
                             where: {
                                 published: true
@@ -86,7 +86,7 @@ export default class UserService {
                 name: true,
                 image: true,
                 email: true,
-                subscriptions: {
+                followers: {
                     select: {
                        channel:{
                             select:{
@@ -98,9 +98,9 @@ export default class UserService {
                     },
                     take: 12,
                 },
-                subscribers:{
+                following:{
                     select:{
-                        subscriber:{
+                        followerUser:{
                             select:{
                                 id: true,
                                 image: true,
@@ -110,11 +110,9 @@ export default class UserService {
                     }
                 },
                 _count:{
-                    subscriptions: true,                       
                     select: {
-                        subscribers: true,
+                        following: true,
                         videos: true,
-                        messagesReceive: true,
                         notifications: true,
                     }
                 },

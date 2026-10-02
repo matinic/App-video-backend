@@ -33,7 +33,7 @@ export default class PlaylistService {
         })
     }
 
-    async getPlaylistById( id : BaseDto.idDto ) {
+    async getPlaylistById( id : BaseDto.IdDto ) {
         const playlist = await this.prisma.playlist.findUnique({
             where: { id },
             include: {
@@ -116,9 +116,22 @@ export default class PlaylistService {
         })
     }
 
-    async deletePlaylist(  UserDto.AuthUserDto ) {
-         return await this.prisma.playlist.delete({
-            where: { id },
+    async deletePlaylist(playlistId: BaseDto.IdDto, userId: UserDto.UserAuthDto["id"]) {
+        const playlist = await this.prisma.playlist.findUnique({
+            where: { id: playlistId },
+            select: { userId: true },
+        })
+
+        if (!playlist) {
+            throw new HttpError(404, "Playlist not found")
+        }
+
+        if (playlist.userId !== userId) {
+            throw new HttpError(403, "You can only delete your own playlists")
+        }
+
+        return await this.prisma.playlist.delete({
+            where: { id: playlistId },
             select: {
                 id: true,
                 name: true

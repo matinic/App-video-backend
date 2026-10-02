@@ -9,6 +9,5 @@ const router = Router()
 router.use("/user", user)
 router.use("/video", video)
 router.use("/notification", notification)
-router.get("/refresh")
 
 export default router

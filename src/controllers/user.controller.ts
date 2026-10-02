@@ -40,7 +40,7 @@ class UserController {
   // This function retrieves a user by their ID from the database
   async getUser(req:Request, res:Response){
     const authUser = req.user as UserDto.UserAuthDto
-    const userNameParam = req.validatedParams as BaseDto.NameDto
+    const { name: userNameParam } = req.validatedParams as { name: BaseDto.NameDto }
     const foundUser = await this.userService.getUser({
       name: userNameParam,
       auth: userNameParam === authUser.name
@@ -49,6 +49,14 @@ class UserController {
       throw new HttpError(404, "User not found")
     }
     res.status(200).json( foundUser ) 
+  }
+  async getChannelInfo(req:Request, res:Response){
+    const { name } = req.validatedQuery
+    const channel = await this.userService.getChannelInfo(name)
+    if(!channel){
+      throw new HttpError(404, "Channel not found")
+    }
+    res.status(200).json(channel)
   }
   async deleteUser(req:Request, res:Response){
     const { id } = req.user
@@ -98,28 +106,37 @@ class UserController {
     const { id: channelId } = req.validatedParams 
     const user = req.user as UserDto.UserAuthDto
     const statusFollow = await this.userService.getFollowStatus( { channelId, followerId: user.id } )
-    if(!statusFollow){
+    if(statusFollow){
       await this.userService.unfollowChannel({ channelId, followerId: user.id })
-  //Add notification event
-      res.status(200).json({message: "Subcription added" });
+      res.status(200).json({message: "Subscription deleted" });
       return 
     }
-    await this.userService.followChannel(req.validatedBody)
-    res.status(200).json({message: "Subscription deleted"});
+    await this.userService.followChannel({ channelId, followerId: user.id })
+    res.status(200).json({message: "Subscription added"});
   }
   async getFollowers(req:Request, res:Response){
     const { id } = req.user
-    const pagination = req.validatedBody
+    const pagination = req.validatedQuery
     const subscribers = await this.userService.getFollowers({
       id,
       ...pagination
     })
     res.status(200).json(subscribers);
   }
+  async getSubscribers(req:Request, res:Response){
+    const { name } = req.validatedParams
+    const { skip, take } = req.validatedQuery ?? {}
+    const channel = await this.userService.getChannelInfo(name)
+    if(!channel){
+      throw new HttpError(404, "Channel not found")
+    }
+    const subscribers = await this.userService.getFollowers({ id: channel.id, skip, take })
+    res.status(200).json(subscribers)
+  }
   async getChannelsFollowing(req:Request, res:Response){
-    // const user = req.user as UserDto.UserAuthDto
-    const { id: channelId, ...pagination } = req.validatedBody as UserDto.GetChannelsFollowingDto 
-    const following = await this.userService.getChannelsFollowing({  id: channelId, ...pagination })
+    const { id } = req.user as UserDto.UserAuthDto
+    const pagination = req.validatedQuery ?? {}
+    const following = await this.userService.getChannelsFollowing({ id, ...pagination })
     res.status(200).json({ following });
   }
   async checkFollowing (req:Request, res:Response){
@@ -130,7 +147,8 @@ class UserController {
       channelId
     })
     if(isSubscribed){
-      res.status(200).json({ isSubscribed: false })
+      res.status(200).json({ isSubscribed: true })
+      return
     }
     res.status(200).json({ isSubscribed });
   }

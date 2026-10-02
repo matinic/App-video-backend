@@ -1,4 +1,4 @@
-import { UserDto } from "./lib/zod/dto/user"
+import { UserDto } from "./lib/zod.schemas/user.schema"
 declare global{
   namespace Express {
     interface Request {

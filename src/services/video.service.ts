@@ -21,6 +21,13 @@ export default class VideoService {
                 url: data.title,
                 description: data.description,
                 thumbnail: data.thumbnail,
+            },
+            include: {
+                author: {
+                    select: {
+                        name: true
+                    }
+                }
             }
         })
     }
@@ -169,6 +176,7 @@ export default class VideoService {
         return await this.prisma.userVideoStatus.findFirst({
             where:{
                 userId,
+                videoId,
                 isLike
             }
         })

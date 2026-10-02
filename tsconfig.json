@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "module": "ESNext",
     "types": ["node"],
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "rootDir": ".",
     "target": "esnext",
     "strict": true,
@@ -13,10 +12,9 @@
     "declarationMap": true,
     "sourceMap": true,
     "paths": {
-      "@/*": ["src/*"],
-      "@test/*": ["test/*"]
-    },
-    "ignoreDeprecations": "6.0"
+      "@/*": ["./src/*"],
+      "@test/*": ["./test/*"]
+    }
   },
   "include": [
     "*.ts",

@@ -1,14 +1,16 @@
 // src/routes/playlist.route.ts
 import { Router } from "express"
+import { z } from "zod"
 import Container from "@/container"
-import * as playlistSchema from "@/lib/zod/schema/playlist"
-import * as baseSchema from "@/lib/zod/schema/base"
+import * as playlistSchema from "@/lib/zod.schemas/playlist.schema"
+import * as baseSchema from "@/lib/zod.schemas/base.schema"
 import auth from "@/lib/middlewares/auth.jwt"
 import validate from "@/lib/middlewares/validate"
 import { asyncHandler } from "@/lib/asyncHandler"
 
 const playlistController = Container.getPlaylistController()
 const router = Router()
+const playlistIdParamSchema = z.object({ id: baseSchema.idSchema })
 
 // POST - Create a new playlist
 router.post(
@@ -29,7 +31,7 @@ router.post(
 // GET - Get playlist by ID
 router.get(
     "/:id",
-    validate({ params: baseSchema.idSchema }),
+    validate({ params: playlistIdParamSchema }),
     asyncHandler(playlistController.getPlaylistById.bind(playlistController))
 )
 
@@ -45,7 +47,7 @@ router.get(
 router.put(
     "/:id",
     auth(),
-    validate({ params: baseSchema.idSchema, body: playlistSchema.updatePlaylistSchema }),
+    validate({ params: playlistIdParamSchema, body: playlistSchema.updatePlaylistSchema.omit({ id: true }) }),
     asyncHandler(playlistController.updatePlaylist.bind(playlistController))
 )
 
@@ -61,7 +63,7 @@ router.delete(
 router.delete(
     "/:id",
     auth(),
-    validate({ params: baseSchema.idSchema }),
+    validate({ params: playlistIdParamSchema }),
     asyncHandler(playlistController.deletePlaylist.bind(playlistController))
 )
 
