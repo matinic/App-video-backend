@@ -45,6 +45,7 @@ Registro cronológico de los cambios implementados en el proyecto.
 - Se añadieron pruebas end-to-end de `GET /health` y de respuestas 404 usando la aplicación Express real, sin conexión a PostgreSQL.
 - La prueba de integración detectó que el middleware respondía `404` y continuaba la ejecución con datos indefinidos. Se corrigió para responder `400` y detener la cadena de middleware ante un payload inválido.
 - Se declararon `bcrypt` y `@types/bcrypt` en `package.json` y se sincronizó `package-lock.json` para las dependencias de autenticación ya utilizadas por la aplicación.
+- Se consolidó la configuración de ignore de Git bajo el nombre canónico `.gitignore`, eliminando la entrada duplicada `.Gitignore` que causaba colisión en Windows. Se conservaron las reglas para `node_modules`, `.env`, `/src/generated/prisma` y `/coverage`.
 
 ### Estado de validación
 
@@ -57,4 +58,4 @@ Registro cronológico de los cambios implementados en el proyecto.
 
 ### Alcance del registro
 
-Este registro describe el trabajo documentado en esta sesión. Los cambios locales previos no relacionados en `.Gitignore`, archivos Markdown eliminados y dependencias de bcrypt se preservaron y quedaron fuera del commit selectivo.
+Este registro describe el trabajo documentado en esta sesión. Las eliminaciones locales de `README.md`, `IMPROVEMENTS_MESSAGE.md` y `PLAYLIST_CRUD_DOCS.md` se mantienen fuera del commit de esta actualización.
