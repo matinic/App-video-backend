@@ -1,166 +1,167 @@
-import { NotificationDto }   from "@/lib/zod/dto/notification"
-import { BaseDto } from "@/lib/zod/dto/base";
-import notificationType from '@/lib/notification/data'
+import { NotificationDto }   from "@/lib/zod.schemas/notification.schema"
 import { PrismaClient } from "@prisma/client"
+import { NotificationEmitter as emiter } from "@/lib/notification/notification.emitter"
+import { JsonObject } from "@prisma/client/runtime/client"
+
+
+const SSEResponses = new Map<string,Response>()
 
 export default class NotificationService {
-    constructor(private prisma: PrismaClient) {}
+    private listenersRegistered = false
 
-    async createNewSubscriptionNotification({ userEmmiterId, userDestinationId }: NotificationDto.CreateNewSubscriptionNotificationDto){
-        return await this.prisma.notification.create({
-            data: {
-                userEmmiter: {
-                    connect: { id: userEmmiterId }
+    constructor(private prisma: PrismaClient ) {}
+
+    async registerNotificationsListeners(){
+        if (this.listenersRegistered) return
+        this.listenersRegistered = true
+
+        emiter.on("userCreated", (payload) => this.handleEvent(payload, () =>
+            this.createNotification({
+                notificationMetadata: { userEmail: payload.userEmail, userImageUrl: payload.userImageUrl },
+                recipientsUserId: [payload.userId],
+                notificationTitle: `Bienvenido ${payload.userName}, gracias por registrarse`,
+            })
+        ))
+        emiter.on("notificationCreated", (payload) => this.handleEvent(payload, () =>
+            this.sendNotification(payload)
+        ))
+        emiter.on("newFollowerUser", (payload) => this.handleEvent(payload, () =>
+            this.createNotification({
+                notificationMetadata: {
+                    newFollowerUserId: payload.newFollowerUserId,
+                    newFollowerUserImageUrl: payload.newFollowerUserImageUrl,
                 },
-                notificationType: {
-                    connect: { type: notificationType["NEW-SUBSCRIPTION"].id }
-                },
-                destinations:{
-                    create: { userDestinationId }
-                }
-            },
+                notificationTitle: `${payload.newFollowerUserName} se ha sumado como seguidor tuyo`,
+                recipientsUserId: [payload.recipientUserId],
+            })
+        ))
+        emiter.on("videoUploaded", (payload) => this.handleEvent(payload, async () => {
+            const author = await this.prisma.user.findUnique({
+                where: { id: payload.authorUserId },
+                select: { followers: { select: { followerId: true } } },
+            })
+            if (!author) throw new Error("Could not find the video author")
+
+            await this.createNotification({
+                notificationMetadata: { videoId: payload.videoId, videoThumbnail: payload.videoThumbnail },
+                notificationTitle: `${payload.authorUserName} ha subido un nuevo video: ${payload.videoTitle}`,
+                recipientsUserId: author.followers.map(({ followerId }) => followerId),
+            })
+        }))
+        emiter.on("notificationError", ({ error, context }) => {
+            console.error("Notification event failed", { error, context })
         })
+        emiter.on("notificationsRead", (payload) => this.handleEvent(payload, () =>
+            this.markNotificationsAsRead(payload)
+        ))
     }
-    async createNewVideoNotification({ userEmmiterId, videoId, userDestinationIdList }: NotificationDto.CreateNewVideoNotificationDto){
-        return await this.prisma.notification.create({
-            data:{
-                userEmmiter: {
-                    connect: { id: userEmmiterId }
-                },
-                video: {
-                    connect: { id: videoId }
-                },
-                destinations:{
-                    createMany: { data: userDestinationIdList }
-                },
-                notificationType: {
-                    connect: { type: notificationType["NEW-VIDEO"].id}
-                } 
-            },
-        }) 
+
+    private async handleEvent(context: unknown, action: () => Promise<unknown>){
+        try {
+            await action()
+        } catch (error) {
+            emiter.emit("notificationError", {
+                error: error instanceof Error ? error : new Error(String(error)),
+                context,
+            })
+        }
     }
-    async createNewCommentOnVideoNotification({ userEmmiterId, commentId, videoId, userDestinationId }: NotificationDto.CreateNewCommentOnVideoNotificationDto){
-        return await this.prisma.notification.create({
-            data:  {
-                userEmmiter: {
-                    connect: { id: userEmmiterId }
-                },
-                comment: {
-                    connect: { id: commentId }
-                },
-                video:{
-                    connect: { id: videoId }
-                },
-                destinations: {
-                    create: { userDestinationId }
-                },
-                notificationType: {
-                    connect: { type: notificationType["NEW-COMMENT"].id }
-                } 
-            },
-        })
-    }
-    async createNewCommentResponseNotification({ userEmmiterId, responseId, userDestinationId }: NotificationDto.CreateNewCommentResponseNotificationDto){
-        return await this.prisma.notification.create({
-            data: {
-                userEmmiter: {
-                    connect: { id: userEmmiterId }
-                },
-                comment: {
-                    connect: { id: responseId }
-                },
-                destinations:{
-                    create:{ userDestinationId }
-                },
-                notificationType: {
-                    connect: { type: notificationType["NEW-COMMENT-RESPONSE"].id }
-                } 
-            },
-        })
-    }
-    async createNewMessageNotification({ userEmmiterId, messageId, userDestinationId }: NotificationDto.CreateNewMessageNotificationDto){
-        return await this.prisma.notification.create({
-            data: {
-                userEmmiter: {
-                    connect: { id: userEmmiterId }
-                },
-                message: {
-                    connect: { id: messageId }
-                },
-                destinations: {
-                    create: { userDestinationId }
-                },
-                notificationType: {
-                    connect: { type: notificationType["NEW-MESSAGE"].id }
-                } 
-            }
-        })
-    }
-    async getNotification( { id }: BaseDto.IdDto ){
-        return await this.prisma.userNotification.findMany({
+
+    async markNotificationsAsRead( { notificationId, userId }: NotificationDto.MarkNotificationsAsReadDto){
+        return await this.prisma.userOnNotification.updateMany({
             where:{
-                userDestinationId: id
-            },
-            include:{
-                notification: {
-                    select:{
-                        createdAt: true
-                    },
-                    include:{
-                        comment: {
-                            select:{
-                                id: true,
-                                content: true,
-                            }
-                        },
-                        message: {
-                            select:{
-                                id: true,
-                                content: true
-                            }
-                        },
-                        userEmmiter: {
-                            select:{
-                                id: true,
-                                image: true,
-                                name: true
-                            }
-                        },
-                        video:{
-                            select:{
-                                id: true, 
-                                title: true,
-                                thumbnail: true
-                            }
-                        },
-                        notificationType:{
-                            select:{
-                                message: true,
-                                type: true
-                            }
-                        }
-                    }
-                }
-            }
-        })
-  }
-    async getNotificationCount({ id }: BaseDto.IdDto ){
-        return await this.prisma.userNotification.count({
-            where: {
-                userDestinationId: id,
-                read: false,
-            },
-        })
-  }
-  async updateNotification( { id }: BaseDto.IdDto ){
-        return await this.prisma.userNotification.updateMany({
-            where: {
-                userDestinationId: id,
-                read: false
+                notificationId: {
+                    in: notificationId.map( id => id )
+                },
+                recipientUserId: userId
             },
             data:{
                 read: true
             }
         })
+        
+    }
+    async sendNotification( {recipientsUserId, notificationId}: NotificationDto.SendNotificationsDto){ 
+        if (recipientsUserId.length === 0) return
+
+        await this.prisma.$transaction(async (tx) => {
+            const usersWithActiveNotifications = await tx.user.findMany({
+                where:{
+                    id:{
+                        in:  recipientsUserId.map( id => id )
+                    },
+                    isNotificationActive: true
+                },
+                select:{
+                    id: true
+                }
+            })
+            await tx.userOnNotification.createMany({
+                data: usersWithActiveNotifications.map( ({id}) => ({    
+                    notificationId,
+                    recipientUserId: id
+                }))
+            })
+        })
+          
+    }
+    async createNotification( args: NotificationDto.CreateNotificationDto  ){
+     
+        function assert(notificationArg: unknown): asserts notificationArg is JsonObject {
+            if(typeof notificationArg !== "object" || notificationArg === null || Array.isArray(notificationArg)) {
+                throw Error("Notification Error: invalid metadata Json format")
+            }
+        } 
+        const notificationMetadata = args.notificationMetadata ?? {}
+        assert(notificationMetadata)
+        const newNotification = await this.prisma.notification.create({
+            data:{
+                metadata: notificationMetadata,
+                title: args.notificationTitle,
+            },
+            select:{
+                id: true,
+                title: true,
+                metadata: true,
+            }
+        })
+        
+        emiter.emit("notificationCreated", {
+           notificationId: newNotification.id,
+           notificationTitle: newNotification.title,
+              recipientsUserId: args.recipientsUserId,
+           notificationMetadata: newNotification.metadata
+        })
+    }
+    async getNotification({ notificationId, userId }: NotificationDto.GetNotificationDto){
+        return await this.prisma.notification.findFirst({
+            where:{
+                id: notificationId,
+                recipient: {
+                    some: { recipientUserId: userId },
+                },
+            }
+        })
+    }
+    async getAllNotifications({ userId, skip, take }: NotificationDto.GetAllNotificationsDto){
+        return await this.prisma.userOnNotification.findMany({
+            where:{
+                recipientUserId: userId
+            },
+            include: { notification: true },
+            orderBy: { createdAt: "desc" },
+            skip: skip ?? 0,
+            take: take ?? 20,
+        })
+    }
+    //---------------------------------------
+    async addNewSSEConnection({ response, userId }: { response: Response, userId: string }){
+        SSEResponses.set(userId, response)
+    }
+    async deleteSSEConnection(){
+
+    }
+    async getSSEConnection(){
+        
     }
 }

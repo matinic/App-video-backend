@@ -5,29 +5,32 @@ import UserService from "@/services/user.service";
 import { HttpError } from "@/lib/errors/http.error";
 import verifyToken from "@/lib/jwt/verify.token"
 import { refreshToken, accessToken } from "@/lib/jwt/generate.token"
-import { UserDto } from "@/lib/zod/dto/user"
 import { comparePassword, encryptPassword } from "@/lib/bcrypt"
 import { v2 } from "cloudinary"
 import process from "process"
-import NotificationService from "@/services/notification.service"
+import { NotificationEmitter as emiter } from '@/lib/notification/notification.emitter';
+import { UserDto } from '@/lib/zod.schemas/user.schema';
+import { BaseDto } from '@/lib/zod.schemas/base.schema';
 
 class UserController {
-    constructor(private userService: UserService, private notificationService: NotificationService) {}
+  constructor(private userService: UserService) {}
   async createUser(req:Request, res:Response){
-    const { name, email, password } = req.validatedBody
-    const userByName = await this.userService.checkUserName( { name } )
+    const newUserData = req.validatedBody as UserDto.CreateUserDto
+    const userByName = await this.userService.getUser( { name: newUserData.name } )
     if (userByName) {
       throw new HttpError(409, "User already exist!");
     }
-    const userByEmail = await this.userService.checkUserEmail( { email } )
-    if (userByEmail) {
-      throw new HttpError(409, "Email already in use, choose other!");
-    }
-    const encryptedPassword = await encryptPassword( password )
+    const encryptedPassword = await encryptPassword( newUserData.password )
     const newUser = await this.userService.createUser({
-      ...req.validatedBody,
+      ...newUserData,
       password: encryptedPassword
-    });  
+    });
+    emiter.emit("userCreated",{
+      userEmail: newUser.email,
+      userImageUrl: newUser.image,
+      userId: newUser.id,
+      userName: newUser.name
+    })
     res.status(201).json({
       message:"user created successfully",
       userId: newUser.id
@@ -35,32 +38,39 @@ class UserController {
   }
   // Function to get a user by ID
   // This function retrieves a user by their ID from the database
-  async getChannelInfo(req:Request, res:Response){
-    const data = req.user
-    const { name } = req.validatedParams
-    if( data?.name === name ){
-      const foundUser = await this.userService.getAuthChannelInfo( req.user )
-      res.status(200).json( foundUser )
-      return 
-    }
-    const foundUser = await this.userService.getChannelInfo( { name } )
+  async getUser(req:Request, res:Response){
+    const authUser = req.user as UserDto.UserAuthDto
+    const { name: userNameParam } = req.validatedParams as { name: BaseDto.NameDto }
+    const foundUser = await this.userService.getUser({
+      name: userNameParam,
+      auth: userNameParam === authUser.name
+    })
     if(!foundUser){
-      throw new HttpError(404, "User not found");
+      throw new HttpError(404, "User not found")
     }
-    res.status(200).json(foundUser);
+    res.status(200).json( foundUser ) 
+  }
+  async getChannelInfo(req:Request, res:Response){
+    const { name } = req.validatedQuery
+    const channel = await this.userService.getChannelInfo(name)
+    if(!channel){
+      throw new HttpError(404, "Channel not found")
+    }
+    res.status(200).json(channel)
   }
   async deleteUser(req:Request, res:Response){
     const { id } = req.user
-    const deletedUser = await this.userService.deleteUserById( { id } )
+    const deletedUser = await this.userService.deleteUser( id )
+    if(!deletedUser){
+      throw new HttpError(500, "Error while deleting user")
+    }
     res.status(200).json({
       message: "User deleted successfully",
-      userId: deletedUser.id,
-      name: deletedUser.name
     });
   }
   async getSession(req:Request, res:Response){
-    const { nameOrEmail, password } = req.validatedBody;
-    const foundUser = await this.userService.getUserByNameOrEmail( nameOrEmail )
+    const { requiredData, password } = req.validatedBody as UserDto.GetUserSessionDto;
+    const foundUser = await this.userService.findSessionUser( requiredData );
     if(!foundUser) {
       throw new HttpError(404, "User not found");
     }
@@ -92,54 +102,55 @@ class UserController {
         }
       });
   }
-  async updateUserStatusSubscription(req:Request, res:Response){
-    const { id } = req.validatedParams
-    const data = req.user
-    const status = await this.userService.checkSubscription({
-      channelId: id,
-      subscriberId: data.id
-    })
-    if(!status){
-      await this.userService.createSubscription(req.validatedBody)
-      await this.notificationService.createNewSubscriptionNotification({
-        userEmmiterId: data.id,
-        userDestinationId: id
-      })
-      res.status(200).json({message: "Subcription added" });
+  async updateFollowStatus(req:Request, res:Response){
+    const { id: channelId } = req.validatedParams 
+    const user = req.user as UserDto.UserAuthDto
+    const statusFollow = await this.userService.getFollowStatus( { channelId, followerId: user.id } )
+    if(statusFollow){
+      await this.userService.unfollowChannel({ channelId, followerId: user.id })
+      res.status(200).json({message: "Subscription deleted" });
       return 
     }
-    await this.userService.deleteSubscription(req.validatedBody)
-    res.status(200).json({message: "Subscription deleted"});
+    await this.userService.followChannel({ channelId, followerId: user.id })
+    res.status(200).json({message: "Subscription added"});
   }
-  async getSubscribers(req:Request, res:Response){
+  async getFollowers(req:Request, res:Response){
     const { id } = req.user
-    const pagination = req.validatedBody
-    const subscribers = await this.userService.getSubscribers({
+    const pagination = req.validatedQuery
+    const subscribers = await this.userService.getFollowers({
       id,
       ...pagination
     })
     res.status(200).json(subscribers);
   }
-  async getSubscriptions(req:Request, res:Response){
-    const { id } = req.user
-    const pagination = req.validatedBody
-    const subcriptions = await this.userService.getSubscriptions({
-      id,
-      ...pagination
-    })
-    res.status(200).json({ subcriptions });
+  async getSubscribers(req:Request, res:Response){
+    const { name } = req.validatedParams
+    const { skip, take } = req.validatedQuery ?? {}
+    const channel = await this.userService.getChannelInfo(name)
+    if(!channel){
+      throw new HttpError(404, "Channel not found")
+    }
+    const subscribers = await this.userService.getFollowers({ id: channel.id, skip, take })
+    res.status(200).json(subscribers)
   }
-  async checkSubscription (req:Request, res:Response){
+  async getChannelsFollowing(req:Request, res:Response){
+    const { id } = req.user as UserDto.UserAuthDto
+    const pagination = req.validatedQuery ?? {}
+    const following = await this.userService.getChannelsFollowing({ id, ...pagination })
+    res.status(200).json({ following });
+  }
+  async checkFollowing (req:Request, res:Response){
     const { id } = req.user
-    const { channelId } = req.validatedParams
-    const isSubscribed = await this.userService.checkSubscription({
-      subscriberId: id,
+    const { id: channelId } = req.validatedParams 
+    const isSubscribed = await this.userService.getFollowStatus({
+      followerId: id,
       channelId
     })
-    res.status(200).json({
-      channelId,
-      isSubscribed
-    });
+    if(isSubscribed){
+      res.status(200).json({ isSubscribed: true })
+      return
+    }
+    res.status(200).json({ isSubscribed });
   }
   async getCloudinarySignature(req:Request, res:Response){
     let body = req.validatedBody

@@ -1,51 +1,60 @@
-import { UserDto }   from "@/lib/zod/dto/user"
-import { BaseDto } from "@/lib/zod/dto/base";
+import { UserDto }   from "@/lib/zod.schemas/user.schema"
+import { BaseDto } from "@/lib/zod.schemas/base.schema";
 import { PrismaClient } from "@prisma/client"
 
 export default class UserService {
     constructor(private prisma: PrismaClient){}
-    async createUser( data: UserDto.CreateUserDto){
+    async createUser( { email, name, password }: UserDto.CreateUserDto){
         return await this.prisma.user.create({ data: {
-            ...data
+            email,
+            name,
+            password
         }});
     }
-    async deleteUserById( { id }: BaseDto.IdDto){
-        return await this.prisma.user.update({
-            where: { id },
-            data:{
-                deleted: true
-            }
-        })
-    }
-    async getUserByNameOrEmail( data: string ){
+    async findSessionUser( requiredData: string ){
         return await this.prisma.user.findFirst({
             where: {
-                OR: [{ name: data }, { email: data }]
+                OR:[{
+                    name: requiredData,
+                },{
+                    email: requiredData
+                }]
             },
-            select: {
+            select:{
                 password: true,
-                id: true,
                 name: true,
+                id: true,
                 refreshToken: true,
                 image: true
             }
-        }) 
+        })
     }
-    async checkUserEmail( { email }: BaseDto.EmailDto ){
+    async getUser( user: UserDto.GetUserDto ){
+        if(user.auth){
+            return await this.prisma.user.findFirst({
+                where:{
+                    name: user.name,
+                },
+                select:{
+                    image: true,
+                    id: true,
+                    name: true,
+                    email: true
+                }
+            })
+        }
         return await this.prisma.user.findFirst({
             where:{
-                email
-            }
+                name: user.name
+            },
+            select:{
+                image: true,
+                name: true,
+            },
         })
+
     }
-    async checkUserName ( { name }: BaseDto.NameDto ){
-        return await this.prisma.user.findFirst({
-            where: {
-                name,
-            }
-        })
-    }
-    async getChannelInfo( { name }: BaseDto.NameDto ){
+    async getChannelInfo( name: BaseDto.NameDto ){
         return await this.prisma.user.findUnique({
             where: { name },
             select: {
@@ -54,7 +63,7 @@ export default class UserService {
                 image: true,
                 _count:{
                     select: {
-                        subscribers: true,
+                        following: true,
                         videos: {
                             where: {
                                 published: true
@@ -66,15 +75,18 @@ export default class UserService {
             }
         })
     }
-    async getAuthChannelInfo( data: UserDto.AuthUserDto ){
+    async getAuthUserInfo( { id, name }: UserDto.UserAuthDto ){
         return await this.prisma.user.findUnique({
-            where: { ...data },
+            where: {
+                id,
+                name
+            },
             select: {
                 id: true,
                 name: true,
                 image: true,
                 email: true,
-                subscriptions: {
+                followers: {
                     select: {
                        channel:{
                             select:{
@@ -86,9 +98,9 @@ export default class UserService {
                     },
                     take: 12,
                 },
-                subscribers:{
+                following:{
                     select:{
-                        subscriber:{
+                        followerUser:{
                             select:{
                                 id: true,
                                 image: true,
@@ -99,10 +111,8 @@ export default class UserService {
                 },
                 _count:{
                     select: {
-                        subscribers: true,
-                        subscriptions: true,                       
+                        following: true,
                         videos: true,
-                        messagesReceive: true,
                         notifications: true,
                     }
                 },
@@ -116,37 +126,39 @@ export default class UserService {
             data: { refreshToken }   
         })
     }
-    async createSubscription({ channelId, subscriberId }:UserDto.SubscriptionDto){ 
-        return await this.prisma.channelSubscribers.create({
+    async followChannel({ channelId, followerId }: UserDto.GetFollowStatusDto ){ 
+        return await this.prisma.userOnFollow.create({
             data:{
-                channel: {
+                followerUser: {
                     connect:{
-                      id: channelId
+                      id: followerId
                     }
                 },
-                subscriber: {
+                channel: {
                     connect: {
-                        id: subscriberId
+                        id: channelId
                     }
                 }
             }
         })
     }
-    async deleteSubscription( { subscriberId, channelId }: UserDto.SubscriptionDto){
-        await this.prisma.channelSubscribers.delete ({
+    async unfollowChannel( { channelId, followerId }: UserDto.GetFollowStatusDto){
+        return await this.prisma.userOnFollow.delete ({
             where:{
-                channelId_subscriberId: {
-                    channelId,
-                    subscriberId
+                followerId_channelId:{
+                    followerId,
+                    channelId
                 }
             },
         })
     }
-    async getSubscribers({ id, ...pagination }: UserDto.GetSubscribersListDto){
-        return await this.prisma.channelSubscribers.findMany({
-            where:{ channelId: id },
+    async getFollowers({ id, ...pagination  }: UserDto.GetChannelsFollowingDto){
+        return await this.prisma.userOnFollow.findMany({
+            where:{ 
+                channelId: id
+            },
             select:{
-                subscriber: {
+                followerUser: {
                     select: {
                         name: true,
                         image: true,
@@ -157,11 +169,11 @@ export default class UserService {
             ...pagination
         })
     }
-    async getSubscriptions({ id, ...pagination }: UserDto.GetSubscribersListDto ){
-        return await this.prisma.channelSubscribers.findMany({
-            where:{ subscriberId: id },
+    async getChannelsFollowing({ id, ...pagination }: UserDto.GetChannelsFollowingDto ){
+        return await this.prisma.userOnFollow.findMany({
+            where:{ followerId: id },
             select:{
-                channel:{    
+                channel: {    
                     select: {
                         name: true,
                         image: true,
@@ -172,17 +184,27 @@ export default class UserService {
             ...pagination
         })
     }
-    async checkSubscription({ channelId, subscriberId }:UserDto.SubscriptionDto){
-        return await this.prisma.user.count({
+    async getFollowStatus({ followerId, channelId }: UserDto.GetFollowStatusDto){
+        return await this.prisma.userOnFollow.findFirst({
             where: {
-                id: subscriberId,
-                subscriptions:{
-                    some:{
-                        channelId
-                    }
-                }
+               channelId,
+               followerId
             },
         })
+    }
+    async deleteUser( id: BaseDto.IdDto ){
+        const userSoftDeleted = await this.prisma.user.update({
+            where:{
+                id
+            },
+            data:{
+                deleted: true
+            }
+        })
+        if(!userSoftDeleted.deleted){
+            return null
+        }
+        return 1
     }
 } 
 

@@ -1,31 +1,30 @@
 import { Request, Response } from "express";
 import VideoService from "@/services/video.service";
-import UserService from "@/services/user.service";
-import NotificationService from "@/services/notification.service";
 import { HttpError } from "@/lib/errors/http.error";
+import { NotificationEmitter } from "@/lib/notification/notification.emitter";
+import { UserDto } from "@/lib/zod.schemas/user.schema";
 
 export default class VideoController {
-  constructor(private userService: UserService, private videoService: VideoService, private notificationService: NotificationService ){}
+  constructor( private videoService: VideoService, private notificationEmitter: NotificationEmitter ){}
   
   async createVideo(req:Request, res:Response){
     const data = req.validatedBody
-    const { id } = req.user
-    const createdVideo = await this.videoService.createVideo(data)
+    const video = await this.videoService.createVideo(data)
 
-    const subscribers = await this.userService.getSubscribers({ id })
-    const userDestinationIdList = subscribers.map( ( { subscriber })  => ({ userDestinationId: subscriber.id }))
-    await this.notificationService.createNewVideoNotification({
-      userEmmiterId: createdVideo.authorId,
-      videoId: createdVideo.id,
-      userDestinationIdList
+    this.notificationEmitter.emit("videoUploaded", {
+      authorUserId: video.authorId,
+      authorUserName: video.author.name,
+      videoId: video.id,
+      videoThumbnail: video.thumbnail,
+      videoTitle: video.title
     })
 
-    res.status(201).json({message:"video created successfully"}).redirect(`/video/${createdVideo.id}`);
+    res.status(201).json({message:"video created successfully"});
   }
   
   async getVideoById (req:Request, res:Response){
     const { id } = req.validatedParams
-    const foundVideo = await this.videoService.getVideoById({ id })
+    const foundVideo = await this.videoService.getVideoById(id)
     if(!foundVideo){
       throw new HttpError(404, "Video not found");
     }
@@ -37,16 +36,16 @@ export default class VideoController {
     const videos = await this.videoService.getVideosPublished(data);
     res.status(200).json({
       videos,
-      cursor: req.validatedQuery.skip + 1,
+      cursor: (data.skip ?? 0) + 1,
     });
   }
   
   async getVideosBySearch(req:Request, res:Response){
     const data = req.validatedBody 
-    const videos = await this.videoService.getVideosBySearch(data);
+    const videos = await this.videoService.searchVideo(data);
     res.status(200).json({
       videos,
-      cursor: req.validatedBody.skip + 1
+      cursor: (data.skip ?? 0) + 1
     });
   }
   
@@ -54,12 +53,12 @@ export default class VideoController {
     const { name } = req.validatedParams 
     const data = req.validatedBody 
     const videos = await this.videoService.getChannelVideos({
-      name,
+      userName: name,
       ...data
     })
     res.status(200).json({
       videos,
-      cursor: req.validatedBody.skip + 1, 
+      cursor: (data.skip ?? 0) + 1,
     })
   }
   
@@ -67,18 +66,18 @@ export default class VideoController {
     const { name } = req.user
     const data = req.validatedBody 
     const videos = await this.videoService.getChannelUnpublishedVideos({ 
-      name,
+      userName: name,
       ...data
     })
     res.status(200).json({
       videos,
-      cursor: req.validatedBody.skip + 1, 
+      cursor: (data.skip ?? 0) + 1,
     })
   }
   
   async deleteVideo(req:Request, res:Response){
     const { id } = req.validatedParams 
-    await this.videoService.deleteVideo( { id } )
+    await this.videoService.deleteVideo(id)
     res.status(200).json({ message: "Video Deleted" })
   }
   
@@ -89,15 +88,16 @@ export default class VideoController {
   }
   
   async updateLikeVideoStatus(req:Request, res:Response){
-    const data = req.validatedParams
-    await this.videoService.upsertUserVideoLikeStatus(data)
+    const { id: videoId } = req.validatedParams
+    const { id: userId } = req.user as UserDto.UserAuthDto
+    await this.videoService.updateUserVideoStatus({ userId, videoId, isLike: true })
     res.status(200).json("Video likes status updated")
   }
   
   async getUserVideoStatus(req:Request, res:Response){
-    const { id } = req.user
-    const { videoId } = req.validatedBody
-    const status = await this.videoService.getUserVideoStatus({ userId: id, videoId})
+    const { id: userId } = req.user as UserDto.UserAuthDto
+    const { videoId, isLike } = req.validatedBody
+    const status = await this.videoService.getUserVideoStatus({ userId, videoId, isLike })
     if(!status) {
       throw new HttpError(400, "Relation not found");
     }

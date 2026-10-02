@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import { NextFunction, Request, Response } from "express"
 import verifyToken from "../jwt/verify.token"
-import { UserDto } from '../zod/dto/user'
+import { UserDto } from "@/lib/zod.schemas/user.schema"
 
 export default ( strict = true )=>{
   return ( async( req:Request, res:Response, next:NextFunction )=>{
@@ -13,7 +13,7 @@ export default ( strict = true )=>{
           return
         }
         const token = header.split(' ')[1]
-        const user = await verifyToken({token,option: "access"}) as UserDto.AuthUserDto
+        const user = await verifyToken({token,option: "access"}) as UserDto.UserAuthDto
         if(strict && !user){
           res.sendStatus(401)
           return

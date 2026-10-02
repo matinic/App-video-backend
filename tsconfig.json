@@ -1,19 +1,23 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "module": "ESNext",
+    "types": ["node"],
     "moduleResolution": "bundler",
     "rootDir": ".",
-    "target": "ES2023",
+    "target": "esnext",
     "strict": true,
     "esModuleInterop": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "paths": {
-      "@/*": ["src/*"],
-      "@test/*": ["test/*"]
-    },
-    "ignoreDeprecations": "5.0"
+      "@/*": ["./src/*"],
+      "@test/*": ["./test/*"]
+    }
   },
   "include": [
+    "*.ts",
     "src/**/*",
     "test/**/*"
   ],

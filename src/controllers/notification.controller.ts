@@ -1,24 +1,50 @@
 import { Request, Response } from "express";
-import notificationFormat from "@/lib/notification/out.format.helper"
 import NotificationService from "@/services/notification.service";
+
+import { HttpError } from "@/lib/errors/http.error";
 
 export default class NotificationController {
     constructor(private notificationService: NotificationService){}
-    
-    async updateNotification(req:Request, res:Response){
-        const { id } = req.user
-        await this.notificationService.updateNotification({ id })
-        res.status(200).json({message: "Notification updated successfully"})
+   
+    async getNotification(req:Request, res:Response): Promise<void>{
+        const { id: userId } = req.user;
+        const { id } = req.validatedParams;
+        const notification = await this.notificationService.getNotification({ notificationId: id, userId });
+        if(!notification){
+            throw new HttpError(404,"notification not found")
+        }
+        res.status(200).json(notification);
+        return
     }
     
     async getNotifications(req:Request, res:Response){
-        const { id } = req.user
-        const notificationsFound = await this.notificationService.getNotification({ id })
-        const notificationsCount = await this.notificationService.getNotificationCount({ id })
-        const notifications = notificationFormat(notificationsFound)
-        res.status(200).json({
-            notifications,
-            _count: notificationsCount
-        })
+        const { id: userId } = req.user;
+        const pagination = req.validatedQuery ?? {};
+        const notifications = await this.notificationService.getAllNotifications({
+            userId,
+            ...pagination,
+        });
+        res.status(200).json({ notifications });
     }
+
+    async updateBulkNotifications(req:Request, res:Response){
+        const { id: userId } = req.user;
+        const { notificationId } = req.validatedBody;
+        const result = await this.notificationService.markNotificationsAsRead({
+            notificationId,
+            userId,
+        });
+        res.status(200).json({ updatedCount: result.count });
+    }
+    
+    async deleteNotification(req:Request, res:Response){
+
+    }
+    ///----SSE Service
+
+    async startSSEConection(req:Request, res:Response){
+        
+    }
+    
+
 }

@@ -4,8 +4,11 @@ import morgan from "morgan"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import errorMiddleware from "@/lib/middlewares/error.middleware";
+import Container from "@/container";
 import router from './routes';
 const app: Express = express();
+
+void Container.getNotificationService().registerNotificationsListeners();
 
 app.use(cors(
     {
